@@ -1,10 +1,15 @@
 <ejs-treegrid 
+  #grid
   [dataSource]='data'
   [treeColumnIndex]='1'
   [allowSorting]="true"
   [sortSettings]="sortSettings"
+  [editSettings]='editSettings'
+  [contextMenuItems]='contextMenuItems'
+  (commandClick)="commandClick($event)"
   childMapping='subtasks'>
   <e-columns>
+    <e-column field='ID' headerText='ID' textAlign='Center' width=90></e-column>
     <e-column field='Region' headerText='Region' textAlign='Center' width=200></e-column>
     <e-column field='Country' headerText='Country' textAlign='Left' width=100></e-column>
     <e-column field='Item Type' headerText='Item Type' textAlign='Right' width=90></e-column>

@@ -15,6 +15,7 @@ async function bootstrap() {
 
   // For handling validation of input datas
   app.useGlobalPipes(new ValidationPipe());
+  app.setGlobalPrefix(configService.get('BACKEND_PREFIX'));
 
   await app.listen(configService.get('PORT'));
 }
