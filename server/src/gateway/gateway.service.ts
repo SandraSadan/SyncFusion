@@ -8,7 +8,6 @@ import {
 
 @Injectable()
 @WebSocketGateway(Number(process.env.SOCKET_PORT), {
-  namespace: '/',
   cors: true,
 })
 export class GatewayService {
