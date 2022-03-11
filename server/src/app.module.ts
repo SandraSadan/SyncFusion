@@ -6,6 +6,10 @@ import { DataModule } from './data/data.module';
 
 import configuration from './config/configuration';
 
+// Imports needed to test socket
+import { GatewayModule } from './gateway/gateway.module';
+import { GatewayService } from './gateway/gateway.service';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -14,8 +18,9 @@ import configuration from './config/configuration';
       expandVariables: true,
     }),
     DataModule,
+    GatewayModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, GatewayService],
 })
 export class AppModule {}
