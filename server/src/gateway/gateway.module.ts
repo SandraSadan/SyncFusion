@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { GatewayService } from './gateway.service';
 
 @Module({
-  imports: [ConfigModule.forRoot()],
+  imports: [],
   providers: [GatewayService],
 })
 export class GatewayModule {}
