@@ -1,6 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { sampleData } from './sample';
 import { ContextMenuItem, SortSettingsModel, TreeGridComponent } from '@syncfusion/ej2-angular-treegrid';
+import { SocketService } from 'src/modules/services/socket.service';
 
 @Component({
   selector: 'app-root',
@@ -8,6 +9,11 @@ import { ContextMenuItem, SortSettingsModel, TreeGridComponent } from '@syncfusi
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
+
+  constructor(
+    private socketService: SocketService
+  ) {}
+
   @ViewChild(TreeGridComponent) grid!: TreeGridComponent;
   title: string = 'syncfusion';
   data: any[] = [];
@@ -25,6 +31,9 @@ export class AppComponent {
   ngOnInit(): void {
     this.data = sampleData;
     this.assignSubtasks();
+    this.socketService.rowAdded().subscribe((data: string) => {
+      console.log(data);
+    });
     // this.sortSettings = { columns: [{ field: 'Country', direction: 'Ascending' }, { field: 'Order ID', direction: 'Descending' }]  };
   }
 
