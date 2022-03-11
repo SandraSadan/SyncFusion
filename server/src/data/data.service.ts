@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { readFileSync, writeFileSync } from 'fs';
-import { findIndex } from 'lodash';
+import { findIndex, isEmpty } from 'lodash';
 import { Data } from './interfaces';
 
 @Injectable()
@@ -8,14 +8,14 @@ export class DataService {
   async getAllData(pagination?: {
     page: number;
     limit: number;
-  }): Promise<{}[]> {
+  }): Promise<Data[]> {
     const jsonData = JSON.parse(
-      readFileSync('./src/test.json', {
+      readFileSync('./src/dataBase.json', {
         encoding: 'utf8',
         flag: 'r',
       }),
     );
-    return pagination
+    return pagination && !isEmpty(pagination)
       ? jsonData.data.slice(
           ((Math.abs(pagination.page) || 1) - 1) * Math.abs(pagination.limit),
           Math.abs(pagination.limit),
@@ -23,7 +23,9 @@ export class DataService {
       : jsonData.data;
   }
 
-  async findByorderId(id: number) {
+  async findByorderId(
+    id: number,
+  ): Promise<{ singleData: Data; allData: Data[] }> {
     const allData = await this.getAllData();
     const singleData = allData.find((element: Data) => {
       return Number(element.id) === Number(id);
@@ -36,7 +38,7 @@ export class DataService {
     Object.assign(singleData, {
       id: 1,
       first_name: 'Alameda',
-      last_name: 'Car',
+      last_name: 'Car1',
       email: 'acarr0@scribd.com',
       gender: 'Female',
       ip_address: '190.82.135.140',
@@ -44,7 +46,7 @@ export class DataService {
     const index = findIndex(allData, singleData);
     allData.splice(index, 1, singleData);
     writeFileSync(
-      './src/test.json',
+      './src/dataBase.json',
       JSON.stringify({
         settings: '',
         data: allData,
