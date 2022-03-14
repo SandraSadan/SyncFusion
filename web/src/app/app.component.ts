@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { sampleData } from './sample';
 
 import { createElement } from '@syncfusion/ej2-base';
 import { BeforeOpenCloseEventArgs } from '@syncfusion/ej2-inputs';
-import { EditSettingsModel, SortSettingsModel } from '@syncfusion/ej2-angular-treegrid';
+import { EditSettingsModel, SortSettingsModel, TreeGridComponent } from '@syncfusion/ej2-angular-treegrid';
+import { SocketService } from 'src/modules/services/socket.service';
 
 @Component({
   selector: 'app-root',
@@ -11,6 +12,12 @@ import { EditSettingsModel, SortSettingsModel } from '@syncfusion/ej2-angular-tr
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
+
+  constructor(
+    private socketService: SocketService
+  ) {}
+
+  @ViewChild(TreeGridComponent) grid!: TreeGridComponent;
   title: string = 'syncfusion';
   data: any[] = []; // Need to change the type from any when actual data is rendered
   isInitialLoad: boolean = true;
@@ -43,6 +50,9 @@ export class AppComponent {
   ngOnInit(): void {
     this.data = sampleData;
     this.assignSubtasks();
+    this.socketService.rowAdded().subscribe((data: string) => {
+      console.log(data);
+    });
   }
 
   assignSubtasks(): void {

@@ -18,5 +18,6 @@ async function bootstrap() {
   app.setGlobalPrefix(configService.get('BACKEND_PREFIX'));
 
   await app.listen(configService.get('PORT'));
+  console.log(`App running on`, await app.getUrl());
 }
 bootstrap();

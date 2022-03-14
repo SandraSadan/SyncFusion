@@ -7,22 +7,24 @@
   [contextMenuItems]='contextMenuItems'
   (contextMenuOpen)="contextMenuOpen($event)"
   (contextMenuClick)="contextMenuClick($event)"
+  [enableVirtualization]='true'
+  [height]='500'
   childMapping='subtasks'>
   <e-columns>
     <e-column field='ID' headerText='ID' textAlign='Center' width=90></e-column>
-    <e-column field='Region' headerText='Region' textAlign='Center' width=200></e-column>
-    <e-column field='Country' headerText='Country' textAlign='Left' width=100></e-column>
+    <e-column field='Order ID' headerText='Order ID' textAlign='Left' width=90></e-column>
+    <e-column field='Order Date' headerText='Order Date' textAlign='Left' width=90></e-column>
+    <e-column field='Order Priority' headerText='Order Priority' textAlign='Left' width=90></e-column>
+    <e-column field='Ship Date' headerText='Ship Date' textAlign='Left' width=90></e-column>
     <e-column field='Item Type' headerText='Item Type' textAlign='Right' width=90></e-column>
     <e-column field='Sales Channel' headerText='Sales Channel' textAlign='Right' width=80></e-column>
-    <e-column field='Order Priority' headerText='Order Priority' textAlign='Left' width=90></e-column>
-    <e-column field='Order Date' headerText='Order Date' textAlign='Left' width=90></e-column>
-    <e-column field='Order ID' headerText='Order ID' textAlign='Left' width=90></e-column>
-    <e-column field='Ship Date' headerText='Ship Date' textAlign='Left' width=90></e-column>
     <e-column field='Units Sold' headerText='Units Sold' textAlign='Left' width=90></e-column>
     <e-column field='Unit Price' headerText='Unit Price' textAlign='Left' width=90></e-column>
     <e-column field='Unit Cost' headerText='Unit Cost' textAlign='Left' width=90></e-column>
     <e-column field='Total Revenue' headerText='Total Revenue' textAlign='Left' width=90></e-column>
     <e-column field='Total Cost' headerText='Total Cost' textAlign='Left' width=90></e-column>
     <e-column field='Total Profit' headerText='Total Profit' textAlign='Left' width=90></e-column>
+    <e-column field='Region' headerText='Region' textAlign='Center' width=200></e-column>
+    <e-column field='Country' headerText='Country' textAlign='Left' width=100></e-column>
   </e-columns>
 </ejs-treegrid>

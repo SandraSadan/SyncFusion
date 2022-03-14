@@ -2,8 +2,13 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { DataModule } from './data/data.module';
 
 import configuration from './config/configuration';
+
+// Imports needed to test socket
+import { GatewayModule } from './gateway/gateway.module';
+import { GatewayService } from './gateway/gateway.service';
 
 @Module({
   imports: [
@@ -12,8 +17,10 @@ import configuration from './config/configuration';
       load: [configuration],
       expandVariables: true,
     }),
+    DataModule,
+    GatewayModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, GatewayService],
 })
 export class AppModule {}
