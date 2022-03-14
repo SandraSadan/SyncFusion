@@ -6,7 +6,8 @@ import {
   WebSocketGateway,
   WebSocketServer,
   OnGatewayConnection,
-  OnGatewayInit, OnGatewayDisconnect
+  OnGatewayInit,
+  OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 ConfigModule.forRoot();
@@ -15,10 +16,12 @@ ConfigModule.forRoot();
 @WebSocketGateway(Number(process.env.SOCKET_PORT), {
   cors: {
     origin: process.env.FRONTEND_URL,
-    methods: ['GET', 'POST']
-  }
+    methods: ['GET', 'POST'],
+  },
 })
-export class GatewayService implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class GatewayService
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer() server: Server;
 
   @SubscribeMessage('message')
