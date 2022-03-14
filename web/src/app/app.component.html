@@ -1,12 +1,12 @@
-<ejs-treegrid 
-  #grid
+<ejs-treegrid
   [dataSource]='data'
   [treeColumnIndex]='1'
   [allowSorting]="true"
   [sortSettings]="sortSettings"
   [editSettings]='editSettings'
   [contextMenuItems]='contextMenuItems'
-  (commandClick)="commandClick($event)"
+  (contextMenuOpen)="contextMenuOpen($event)"
+  (contextMenuClick)="contextMenuClick($event)"
   childMapping='subtasks'>
   <e-columns>
     <e-column field='ID' headerText='ID' textAlign='Center' width=90></e-column>
