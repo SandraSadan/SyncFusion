@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
-import { sampleData } from './sample';
+import { TableData } from 'src/modules/utils/interfaces';
 
 import { createElement } from '@syncfusion/ej2-base';
 import { BeforeOpenCloseEventArgs } from '@syncfusion/ej2-inputs';
 import { EditSettingsModel, SortSettingsModel } from '@syncfusion/ej2-angular-treegrid';
 import { SocketService } from 'src/modules/services/socket.service';
+import { DataService } from 'src/modules/services/data.service';
 
 @Component({
   selector: 'app-root',
@@ -12,13 +13,13 @@ import { SocketService } from 'src/modules/services/socket.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-
   constructor(
-    private socketService: SocketService
+    private socketService: SocketService,
+    private dataService: DataService,
   ) {}
 
   title: string = 'syncfusion';
-  data: any[] = []; // Need to change the type from any when actual data is rendered
+  data: TableData[] = []; // Need to change the type from any when actual data is rendered
   isInitialLoad: boolean = true;
   sortSettings!: SortSettingsModel;
   contextMenuItems = [
@@ -47,7 +48,7 @@ export class AppComponent {
   };
 
   ngOnInit(): void {
-    this.data = sampleData;
+    this.getList();
     this.assignSubtasks();
     this.socketService.rowAdded().subscribe((data: string) => {
       console.log(data);
@@ -55,14 +56,22 @@ export class AppComponent {
   }
 
   assignSubtasks(): void {
-    this.data.forEach((value, index: number) => {
-      value['ID'] = index;
-    });
-    // To assign subtasks
-    this.data.forEach((value, index: number) => {
-      if (value['ID'] % 5 === 0) {
-        value['subtasks'] = this.data.splice(index+1, 4);
-      }
+    // this.data.forEach((value, index: number) => {
+    //   value['ID'] = index;
+    // });
+    // // To assign subtasks
+    // this.data.forEach((value, index: number) => {
+    //   if (value['ID'] % 5 === 0) {
+    //     value['subtasks'] = this.data.splice(index+1, 4);
+    //   }
+    // });
+  }
+
+  getList(): void {
+    this.dataService.getAllLists().subscribe({
+      next: (res) => {
+        this.data = res;
+      },
     });
   }
 
