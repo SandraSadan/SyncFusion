@@ -1,11 +1,13 @@
 import { Component } from '@angular/core';
-import { TableData } from 'src/modules/utils/interfaces';
+import { TableData, Column } from 'src/modules/utils/interfaces';
 
 import { createElement } from '@syncfusion/ej2-base';
 import { BeforeOpenCloseEventArgs } from '@syncfusion/ej2-inputs';
 import { EditSettingsModel, SortSettingsModel } from '@syncfusion/ej2-angular-treegrid';
 import { SocketService } from 'src/modules/services/socket.service';
 import { DataService } from 'src/modules/services/data.service';
+
+import { get } from 'lodash';
 
 @Component({
   selector: 'app-root',
@@ -20,6 +22,7 @@ export class AppComponent {
 
   title: string = 'syncfusion';
   data: TableData[] = []; // Need to change the type from any when actual data is rendered
+  columnList: Column[] = [];
   isInitialLoad: boolean = true;
   sortSettings!: SortSettingsModel;
   contextMenuItems = [
@@ -49,6 +52,7 @@ export class AppComponent {
 
   ngOnInit(): void {
     this.getList();
+    this.getColumn();
     this.assignSubtasks();
     this.socketService.rowAdded().subscribe((data: string) => {
       console.log(data);
@@ -70,9 +74,18 @@ export class AppComponent {
   getList(): void {
     this.dataService.getAllLists().subscribe({
       next: (res) => {
-        this.data = res;
+        this.data = get(res, 'data', []);;
       },
     });
+  }
+
+  getColumn():void {
+    this.dataService.getColumn().subscribe({
+      next: (res) => {
+        this.columnList = get(res, 'column', []);
+        console.log(this.columnList);
+      }
+    })
   }
 
   contextMenuOpen(args?: BeforeOpenCloseEventArgs): void {

@@ -15,4 +15,8 @@ export class DataService extends Request {
   getAllLists(): Observable<any> {
     return this.httpGet('data');
   }
+
+  getColumn(): Observable<any> {
+    return this.httpGet('column');
+  }
 }

@@ -14,11 +14,8 @@
   [height]='500'
   childMapping='subtasks'>
   <e-columns>
-    <e-column field='id' headerText='ID' textAlign='Center' width=90></e-column>
-    <e-column field='firstName' headerText='First Name' textAlign='Left' width=90></e-column>
-    <e-column field='lastName' headerText='Last Name' textAlign='Left' width=90></e-column>
-    <e-column field='email' headerText='Email' textAlign='Left' width=90></e-column>
-    <e-column field='gender' headerText='Gender' textAlign='Left' width=90></e-column>
-    <e-column field='ipAddress' headerText='IP Address' textAlign='Right' width=90></e-column>
+    <ng-container *ngFor="let column of columnList">
+      <e-column [field]="column.fieldName" [headerText]="column.name" [textAlign]="column.alignment" [width]="column.minimumWidth"></e-column>
+    </ng-container>
   </e-columns>
 </ejs-treegrid>
