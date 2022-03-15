@@ -2,8 +2,11 @@
   [dataSource]='data'
   [treeColumnIndex]='1'
   [allowSorting]="true"
+  [allowMultiSorting]="true"
   [sortSettings]="sortSettings"
   [editSettings]='editSettings'
+  [toolbar]="['ColumnChooser']"
+  [showColumnChooser]='true'
   [contextMenuItems]='contextMenuItems'
   (contextMenuOpen)="contextMenuOpen($event)"
   (contextMenuClick)="contextMenuClick($event)"

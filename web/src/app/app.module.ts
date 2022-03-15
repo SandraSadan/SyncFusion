@@ -4,8 +4,11 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
-import { TreeGridModule, SortService, ResizeService,
-  ContextMenuService, EditService, VirtualScrollService } from '@syncfusion/ej2-angular-treegrid';
+import {
+  TreeGridModule, SortService, ResizeService,
+  ContextMenuService, EditService, VirtualScrollService, 
+  ColumnChooserService, ToolbarService, FilterService
+} from '@syncfusion/ej2-angular-treegrid';
 
 @NgModule({
   declarations: [
@@ -17,11 +20,14 @@ import { TreeGridModule, SortService, ResizeService,
     TreeGridModule
   ],
   providers: [
-    SortService, 
-    ContextMenuService, 
-    EditService, 
-    ResizeService, 
-    VirtualScrollService
+    SortService,
+    ContextMenuService,
+    EditService,
+    ResizeService,
+    VirtualScrollService,
+    ColumnChooserService,
+    ToolbarService,
+    FilterService
   ],
   bootstrap: [AppComponent]
 })
