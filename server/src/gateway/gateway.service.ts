@@ -1,5 +1,8 @@
+import { config } from 'dotenv';
+config(); // For injecting env variables at compile time
+
 import { Injectable } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import configuration from 'src/config/configuration';
 import {
   MessageBody,
   SubscribeMessage,
@@ -9,10 +12,9 @@ import {
   OnGatewayInit, OnGatewayDisconnect
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
-ConfigModule.forRoot();
 
 @Injectable()
-@WebSocketGateway(Number(process.env.SOCKET_PORT), {
+@WebSocketGateway(Number(configuration().socketPort), {
   cors: {
     origin: process.env.FRONTEND_URL,
     methods: ['GET', 'POST']
