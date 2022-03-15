@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { readFileSync, writeFileSync } from 'fs';
 import { findIndex, isEmpty, remove } from 'lodash';
-import { Data, File } from './interfaces';
+import { Data, File, Response } from './interfaces';
 
 @Injectable()
 export class DataService {
-  async getAllData(pagination: { page: number; limit: number }): Promise<File> {
+  async getAllData(pagination: { page: number; limit: number }): Promise<Response> {
     const jsonData = await this.readFileJson();
     const data = !isEmpty(pagination)
       ? jsonData.data.slice(
@@ -13,7 +13,7 @@ export class DataService {
           Math.abs(pagination.limit),
         )
       : jsonData.data;
-    return { settings: '', data };
+    return { data };
   }
 
   async findById(id: number): Promise<{ singleData: Data; allData: Data[] }> {
