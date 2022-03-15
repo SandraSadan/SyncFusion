@@ -6,3 +6,8 @@ export interface Data {
   gender: string;
   ip_address: string;
 }
+
+export interface File {
+  settings: '';
+  data: Data[];
+}
