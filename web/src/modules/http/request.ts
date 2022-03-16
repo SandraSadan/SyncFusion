@@ -1,8 +1,8 @@
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Observable, throwError } from "rxjs";
 import { catchError, map } from "rxjs/operators";
-import * as _ from "lodash";
 import { environment } from "src/environments/environment";
+import { get } from 'lodash';
 
 export class Request {
   private baseUrl: string;
@@ -23,7 +23,7 @@ export class Request {
   }
 
   private handleError(error: Response): any {
-    return throwError(_.get(error, "error") || {});
+    return throwError(get(error, "error") || {});
   }
 
   constructor(http: HttpClient) {

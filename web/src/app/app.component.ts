@@ -83,7 +83,6 @@ export class AppComponent {
     this.dataService.getColumn().subscribe({
       next: (res) => {
         this.columnList = get(res, 'column', []);
-        console.log(this.columnList);
       }
     })
   }
