@@ -4,11 +4,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
-import {
-  TreeGridModule, SortService, ResizeService,
-  ContextMenuService, EditService, VirtualScrollService, 
-  ColumnChooserService, ToolbarService, FilterService
-} from '@syncfusion/ej2-angular-treegrid';
+import { TreeGridModule } from '@syncfusion/ej2-angular-treegrid';
 
 @NgModule({
   declarations: [
@@ -19,16 +15,6 @@ import {
     BrowserModule,
     AppRoutingModule,
     TreeGridModule
-  ],
-  providers: [
-    SortService,
-    ContextMenuService,
-    EditService,
-    ResizeService,
-    VirtualScrollService,
-    ColumnChooserService,
-    ToolbarService,
-    FilterService
   ],
   bootstrap: [AppComponent]
 })

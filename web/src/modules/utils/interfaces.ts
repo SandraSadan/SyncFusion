@@ -5,6 +5,7 @@ export interface TableData {
   email: string;
   gender: string;
   ipAddress: string;
+  subtasks?: TableData[];
 }
 
 export interface Column {
