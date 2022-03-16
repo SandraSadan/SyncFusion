@@ -8,7 +8,7 @@ import {
   Delete,
 } from '@nestjs/common';
 import { DataService } from './data.service';
-import { Data, File } from './interfaces';
+import { Data, File, Response } from './interfaces';
 
 @Controller('data')
 export class DataController {
@@ -17,7 +17,7 @@ export class DataController {
   @Get()
   async getData(
     @Query() pagination: { page: number; limit: number },
-  ): Promise<File> {
+  ): Promise<Response> {
     return this.dataService.getAllData(pagination);
   }
 
