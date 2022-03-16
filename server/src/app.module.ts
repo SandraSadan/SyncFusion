@@ -9,6 +9,7 @@ import configuration from './config/configuration';
 // Imports needed to test socket
 import { GatewayModule } from './gateway/gateway.module';
 import { GatewayService } from './gateway/gateway.service';
+import { ColumnModule } from './column/column.module';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { GatewayService } from './gateway/gateway.service';
       expandVariables: true,
     }),
     DataModule,
-    GatewayModule
+    GatewayModule,
+    ColumnModule
   ],
   controllers: [AppController],
   providers: [AppService, GatewayService],

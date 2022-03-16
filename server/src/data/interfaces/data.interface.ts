@@ -1,8 +1,17 @@
 export interface Data {
   id: number;
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   gender: string;
-  ip_address: string;
+  ipAddress: string;
+}
+
+export interface File {
+  settings: '';
+  data: Data[];
+}
+
+export interface Response {
+  data: Data[];
 }
