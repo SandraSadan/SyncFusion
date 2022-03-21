@@ -1,4 +1,4 @@
-export interface Data {
+export interface RowData {
   id: number;
   firstName: string;
   lastName: string;
@@ -7,11 +7,11 @@ export interface Data {
   ipAddress: string;
 }
 
-export interface File {
+export interface FileData {
   settings: '';
-  data: Data[];
+  data: RowData[];
 }
 
 export interface Response {
-  data: Data[];
+  data: RowData[];
 }
