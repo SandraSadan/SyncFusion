@@ -18,7 +18,7 @@ import { Socket, Server } from 'socket.io';
 @WebSocketGateway(Number(configuration().socketPort), {
   cors: {
     origin: process.env.FRONTEND_URL,
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'PUT'],
   },
 })
 export class GatewayService
@@ -27,7 +27,7 @@ export class GatewayService
   @WebSocketServer() server: Server;
 
   @SubscribeMessage('message')
-  handleEvent(@MessageBody() data: string): string {
+  handleEvent(@MessageBody() data: any): any {
     this.server.emit('message', data);
     return data;
   }

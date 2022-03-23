@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { isEmpty } from 'lodash';
 import { Column } from 'src/column/interfaces';
 import {
   readFileJson,
@@ -64,8 +63,8 @@ export class DataService {
       rowDataParser.on('error', (error) => {
         reject(error);
       });
-      let isIdFound: boolean = false;
-      let isRowAdded: boolean = false;
+      let isIdFound = false;
+      let isRowAdded = false;
 
       rowDataParser.on('data', (rowData: RowData) => {
         switch (type) {
@@ -120,7 +119,7 @@ export class DataService {
     bodyData?: Column,
   ): Promise<Column[]> {
     const columnFileData: Array<Column> = [];
-    let isDataExist: boolean = false;
+    let isDataExist = false;
     return new Promise((resolve, reject) => {
       const importStream = readFileStream(),
         columnDataParser = JSONStream.parse('columns.*');
@@ -160,21 +159,29 @@ export class DataService {
 
   async addRow(bodyData: RowData): Promise<FileData> {
     await this.readFileStreamByRow(File.ADD_ROW, 0, bodyData);
-    return readFileJson();
+    const result = readFileJson();
+    this.gatewayService.handleEvent(result);
+    return result;
   }
 
   async updateRow(id: number, bodyData: RowData): Promise<FileData> {
     await this.readFileStreamByRow(File.UPDATE_ROW, id, bodyData);
-    return readFileJson();
+    const result = readFileJson();
+    this.gatewayService.handleEvent(result);
+    return result;
   }
 
   async pasteRow(id: number, bodyData: RowData): Promise<FileData> {
     await this.readFileStreamByRow(File.PASTE_ROW, id, bodyData);
-    return readFileJson();
+    const result = readFileJson();
+    this.gatewayService.handleEvent(result);
+    return result;
   }
 
   async deleteRow(id: number): Promise<FileData> {
     await this.readFileStreamByRow(File.DELETE_ROW, id);
-    return readFileJson();
+    const result = readFileJson();
+    this.gatewayService.handleEvent(result);
+    return result;
   }
 }
