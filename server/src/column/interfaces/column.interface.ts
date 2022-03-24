@@ -9,6 +9,7 @@ export interface Column {
   backgroundColor: string;
   alignment: string;
   textWrap: boolean;
+  dropdownValues?: Array<any>;
 }
 
 export interface Response {

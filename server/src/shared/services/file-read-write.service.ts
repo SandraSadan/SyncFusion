@@ -1,8 +1,7 @@
 import { createReadStream, readFileSync, writeFileSync } from 'fs';
 import { Column } from 'src/column/interfaces';
-import { RowData } from 'src/data/interfaces';
 
-export function writeFileJson(rowData: RowData[], columnData: Column[]) {
+export function writeFileJson(rowData: any[], columnData: Column[]) {
   writeFileSync(
     './src/dataBase.json',
     JSON.stringify({

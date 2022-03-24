@@ -13,12 +13,13 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
+import { FileData } from 'src/data/interfaces';
 
 @Injectable()
 @WebSocketGateway(Number(configuration().socketPort), {
   cors: {
     origin: process.env.FRONTEND_URL,
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'PUT'],
   },
 })
 export class GatewayService
@@ -29,6 +30,12 @@ export class GatewayService
   @SubscribeMessage('message')
   handleEvent(@MessageBody() data: string): string {
     this.server.emit('message', data);
+    return data;
+  }
+
+  @SubscribeMessage('column')
+  handleColumn(@MessageBody() data: FileData): FileData {
+    this.server.emit('column', data);
     return data;
   }
 
