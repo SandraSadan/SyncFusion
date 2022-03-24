@@ -54,6 +54,8 @@ export class DataService {
     type: string,
     id?: number,
     bodyData?: RowData,
+    rowDataList?: RowData[],
+    property?: { fieldName: string; defaultValue: any },
   ): Promise<RowData[]> {
     const rowFileData: Array<RowData> = [];
     return new Promise((resolve, reject) => {
@@ -96,6 +98,16 @@ export class DataService {
               isIdFound = true;
             }
             break;
+          case File.DELETE_COLUMN:
+            delete rowData[property.fieldName];
+            rowFileData.push(rowData);
+            break;
+          case File.CREATE_COLUMN:
+            const createColumn = {};
+            createColumn[property.fieldName] = property.defaultValue;
+            Object.assign(rowData, createColumn);
+            rowFileData.push(rowData);
+            break;
           default:
             rowFileData.push(rowData);
             break;
@@ -131,12 +143,12 @@ export class DataService {
       columnDataParser.on('data', (columnData: Column) => {
         switch (type) {
           case File.DELETE_COLUMN:
-            if (columnData.name !== id) {
+            if (columnData.fieldName !== id) {
               columnFileData.push(columnData);
             }
             break;
           case File.CREATE_COLUMN:
-            isDataExist = columnData.name === id;
+            isDataExist = columnData.fieldName === id;
             break;
           default:
             columnFileData.push(columnData);
@@ -147,9 +159,17 @@ export class DataService {
         if (type === File.CREATE_COLUMN && !isDataExist) {
           columnFileData.push(bodyData);
         }
+
         if (File.GET_COLUMN !== type) {
           const rowFileData: RowData[] = await this.readFileStreamByRow(
-            File.GET_ROW,
+            type,
+            0,
+            null,
+            null,
+            {
+              fieldName: id,
+              defaultValue: isEmpty(bodyData) ? null : bodyData.defaultValue,
+            },
           );
           await writeFileJson(rowFileData, columnFileData);
         }
@@ -168,8 +188,8 @@ export class DataService {
     return readFileJson();
   }
 
-  async pasteRow(id: number, bodyData: RowData): Promise<FileData> {
-    await this.readFileStreamByRow(File.PASTE_ROW, id, bodyData);
+  async pasteRow(parentId: number, bodyData: RowData[]): Promise<FileData> {
+    await this.readFileStreamByRow(File.PASTE_ROW, parentId, null, bodyData);
     return readFileJson();
   }
 
