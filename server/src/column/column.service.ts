@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { readFileSync } from 'fs';
 import { DataService } from 'src/data/data.service';
 import { readFileJson } from 'src/shared/services/file-read-write.service';
 import { File } from 'src/shared/utils/constants';
@@ -20,7 +19,7 @@ export class ColumnService {
   async createColumn(columnData: Column) {
     await this.dataService.readFileStreamByColumn(
       File.CREATE_COLUMN,
-      '',
+      columnData.fieldName,
       columnData,
     );
     return readFileJson();

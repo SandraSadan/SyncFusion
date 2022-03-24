@@ -5,6 +5,7 @@ export interface RowData {
   email: string;
   gender: string;
   ipAddress: string;
+  parentId?: number;
 }
 
 export interface FileData {
