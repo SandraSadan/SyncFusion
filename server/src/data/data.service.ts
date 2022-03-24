@@ -7,7 +7,7 @@ import {
   writeFileJson,
 } from 'src/shared/services/file-read-write.service';
 import { File } from 'src/shared/utils/constants';
-import { RowData, FileData } from './interfaces';
+import { FileData } from './interfaces';
 import * as JSONStream from 'JSONStream';
 import { GatewayService } from 'src/gateway/gateway.service';
 
@@ -17,9 +17,9 @@ export class DataService {
   async getAllData(pagination?: {
     page: number;
     limit: number;
-  }): Promise<{ data: RowData[] }> {
-    const jsonData: RowData[] = await this.readFileStreamByRow(File.GET_ROW);
-    const data: RowData[] = await this.treeGridResponse(jsonData);
+  }): Promise<{ data: any[] }> {
+    const jsonData: any[] = await this.readFileStreamByRow(File.GET_ROW);
+    const data: any[] = await this.treeGridResponse(jsonData);
     return { data };
 
     // commented pagination for future use
@@ -33,7 +33,7 @@ export class DataService {
       : jsonData; */
   }
 
-  async treeGridResponse(data: RowData[]): Promise<any> {
+  async treeGridResponse(data: any[]): Promise<any> {
     const createDataTree = (dataset) => {
       const hashTable = Object.create(null),
         dataTree = [];
@@ -53,11 +53,11 @@ export class DataService {
   async readFileStreamByRow(
     type: string,
     id?: number,
-    bodyData?: RowData,
-    rowDataList?: RowData[],
+    bodyData?: any,
+    rowList?: any[],
     property?: { fieldName: string; defaultValue: any },
-  ): Promise<RowData[]> {
-    const rowFileData: Array<RowData> = [];
+  ): Promise<any[]> {
+    const rowFileData: Array<any> = [];
     return new Promise((resolve, reject) => {
       const importStream = readFileStream(),
         rowDataParser = JSONStream.parse('data.*');
@@ -66,23 +66,13 @@ export class DataService {
       rowDataParser.on('error', (error) => {
         reject(error);
       });
-      let isIdFound: boolean = false;
-      let isRowAdded: boolean = false;
+      let rowCount = 0;
 
-      rowDataParser.on('data', (rowData: RowData) => {
+      rowDataParser.on('data', (rowData: any) => {
+        rowCount++;
         switch (type) {
           case File.ADD_ROW:
-            if (rowData.id + 1 === Number(bodyData.id)) {
-              isRowAdded = true;
-              rowFileData.push(rowData, bodyData);
-            }
-            if (!isIdFound && rowData.id === Number(bodyData.id))
-              isIdFound = true;
-            if (isIdFound) {
-              isRowAdded = false;
-              Object.assign(rowData, { id: rowData.id + 1 });
-            }
-            !isRowAdded && rowFileData.push(rowData);
+            rowFileData.push(rowData);
             break;
           case File.UPDATE_ROW:
             if (rowData.id === Number(id)) {
@@ -92,10 +82,7 @@ export class DataService {
             break;
           case File.DELETE_ROW:
             if (rowData.id !== Number(id)) {
-              isIdFound && Object.assign(rowData, { id: rowData.id - 1 });
               rowFileData.push(rowData);
-            } else {
-              isIdFound = true;
             }
             break;
           case File.DELETE_COLUMN:
@@ -119,8 +106,13 @@ export class DataService {
           const columnFileData = await this.readFileStreamByColumn(
             File.GET_COLUMN,
           );
+          if (type === File.ADD_ROW) {
+            Object.assign(bodyData, { id: rowCount });
+            rowFileData.push(bodyData);
+          }
           await writeFileJson(rowFileData, columnFileData);
         }
+
         resolve(rowFileData);
       });
     });
@@ -128,11 +120,11 @@ export class DataService {
 
   async readFileStreamByColumn(
     type: string,
-    id?: string,
+    fieldName?: string,
     bodyData?: Column,
   ): Promise<Column[]> {
     const columnFileData: Array<Column> = [];
-    let isDataExist: boolean = false;
+    let isDataExist = false;
     return new Promise((resolve, reject) => {
       const importStream = readFileStream(),
         columnDataParser = JSONStream.parse('columns.*');
@@ -143,13 +135,18 @@ export class DataService {
       columnDataParser.on('data', (columnData: Column) => {
         switch (type) {
           case File.DELETE_COLUMN:
-            if (columnData.fieldName !== id) {
+            if (columnData.fieldName !== fieldName) {
               columnFileData.push(columnData);
             }
             break;
           case File.CREATE_COLUMN:
-            isDataExist = columnData.fieldName === id;
+            columnFileData.push(columnData);
+            isDataExist = columnData.fieldName === fieldName;
             break;
+          case File.UPDATE_COLUMN:
+            if (columnData.fieldName === fieldName) {
+              columnData = bodyData;
+            }
           default:
             columnFileData.push(columnData);
             break;
@@ -161,13 +158,13 @@ export class DataService {
         }
 
         if (File.GET_COLUMN !== type) {
-          const rowFileData: RowData[] = await this.readFileStreamByRow(
+          const rowFileData: any[] = await this.readFileStreamByRow(
             type,
             0,
             null,
             null,
             {
-              fieldName: id,
+              fieldName,
               defaultValue: isEmpty(bodyData) ? null : bodyData.defaultValue,
             },
           );
@@ -178,17 +175,17 @@ export class DataService {
     });
   }
 
-  async addRow(bodyData: RowData): Promise<FileData> {
+  async addRow(bodyData: any): Promise<FileData> {
     await this.readFileStreamByRow(File.ADD_ROW, 0, bodyData);
     return readFileJson();
   }
 
-  async updateRow(id: number, bodyData: RowData): Promise<FileData> {
+  async updateRow(id: number, bodyData: any): Promise<FileData> {
     await this.readFileStreamByRow(File.UPDATE_ROW, id, bodyData);
     return readFileJson();
   }
 
-  async pasteRow(parentId: number, bodyData: RowData[]): Promise<FileData> {
+  async pasteRow(parentId: number, bodyData: any[]): Promise<FileData> {
     await this.readFileStreamByRow(File.PASTE_ROW, parentId, null, bodyData);
     return readFileJson();
   }
