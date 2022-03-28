@@ -42,6 +42,6 @@ export class DataController {
 
   @Put('paste/row')
   async pasteData(@Body() bodyData: any): Promise<FileData> {
-    return this.dataService.pasteRow(bodyData.id, bodyData.any);
+    return this.dataService.pasteRow(bodyData);
   }
 }
