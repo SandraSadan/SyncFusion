@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { Request } from "../http/request";
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
-import { ColumnData } from "../utils/interfaces";
+import { ColumnData, TableData } from "../utils/interfaces";
 
 @Injectable({
   providedIn: "root",
@@ -31,5 +31,17 @@ export class DataService extends Request {
 
   deleteColumn(data: ColumnData): Observable<any> {
     return this.httpPut('column/delete', { columnName: data.fieldName })
+  }
+
+  addRow(data: TableData): Observable<any> {
+    return this.httpPost('data', data);
+  }
+
+  editRow(rowId: string, data: TableData): Observable<any> {
+    return this.httpPut(`data/${rowId}`, data)
+  }
+
+  deleteRow(rowId: string): Observable<any> {
+    return this.httpDelete(`data/delete/row/${rowId}`);
   }
 }
