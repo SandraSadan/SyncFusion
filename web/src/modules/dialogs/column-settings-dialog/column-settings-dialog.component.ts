@@ -14,6 +14,7 @@ export class ColumnSettingsDialogComponent implements OnInit {
   columnDetails: ColumnData = {} as ColumnData;
   fieldValue!: string;
   actionPerformed!: string;
+  isLoading: boolean = false;
 
   constructor(
     public dialogRef: MatDialogRef<ColumnSettingsDialogComponent>,
@@ -40,6 +41,7 @@ export class ColumnSettingsDialogComponent implements OnInit {
   }
 
   saveColumnDetails(): void {
+    this.isLoading = true;
     if (this.actionPerformed === 'add') {
       this.columnDetails.fieldName = camelCase(this.columnDetails.name);
       this.dataService.addColumn(this.columnDetails).subscribe({

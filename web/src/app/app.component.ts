@@ -16,6 +16,7 @@ import {
 } from '@syncfusion/ej2-angular-treegrid';
 import { get, find } from 'lodash';
 import { ColumnSettingsDialogComponent } from 'src/modules/dialogs/column-settings-dialog/column-settings-dialog.component';
+import { DeleteDialogComponent } from 'src/modules/dialogs/delete-dialog/delete-dialog.component';
 
 @Component({
   selector: 'app-root',
@@ -48,8 +49,8 @@ export class AppComponent {
     { text: "Cut Rows", target: ".e-content", id: "cut-rows" },
     { text: "Paste Next", target: ".e-content", id: "paste-next" },
     { text: "Paste Child", target: ".e-content", id: "paste-child" },
-    { text: 'Edit Column', target: '.e-headercontent', id: 'edit-col' },
     { text: 'New Column', target: '.e-headercontent', id: 'new-col' },
+    { text: 'Edit Column', target: '.e-headercontent', id: 'edit-col' },
     { text: 'Delete Column', target: '.e-headercontent', id: 'del-col' },
     { text: 'Choose Column', target: '.e-headercontent', id: 'choose-col' },
     { text: 'Freeze Column', target: '.e-headercontent', id: 'freeze-col', iconCss: 'c-custom' },
@@ -195,6 +196,14 @@ export class AppComponent {
         });
         dialogRef.componentInstance.actionPerformed = 'edit';
         dialogRef.componentInstance.columnDetails = find(this.columnList, { fieldName: get(args, 'column.field') }) as ColumnData;
+        break;
+      case 'del-col':
+        const deleteDialog = this.matDialog.open(DeleteDialogComponent, {
+          width: '400px',
+          height: 'auto',
+          disableClose: true,
+        });
+        deleteDialog.componentInstance.column = find(this.columnList, { fieldName: get(args, 'column.field') }) as ColumnData;
         break;
       case 'choose-col':
         this.treeGrid.openColumnChooser();

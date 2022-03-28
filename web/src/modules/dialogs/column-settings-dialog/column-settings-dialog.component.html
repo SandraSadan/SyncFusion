@@ -72,6 +72,6 @@
     <mat-checkbox [checked]="columnDetails.textWrap" name="textWrap" (change)="changeTextWrap()" required>
         Text Wrap
     </mat-checkbox>
-    <button mat-raised-button [disabled]="!columnForm.valid" (click)="saveColumnDetails()">Save</button>
-    <button type="button" (click)="dialogRef.close()">Cancel</button>
+    <button mat-raised-button [disabled]="!columnForm.valid || isLoading" (click)="saveColumnDetails()">Save</button>
+    <button type="button" [disabled]="isLoading" (click)="dialogRef.close()">Cancel</button>
 </form>

@@ -7,6 +7,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatSelectModule } from '@angular/material/select'
 import { MatChipsModule } from '@angular/material/chips';
+import { MatButtonModule } from '@angular/material/button';
 
 
 @NgModule({
@@ -20,7 +21,8 @@ import { MatChipsModule } from '@angular/material/chips';
     MatCheckboxModule,
     MatFormFieldModule,
     MatSelectModule,
-    MatChipsModule
+    MatChipsModule,
+    MatButtonModule
   ],
   providers: [
     ColumnSettingsDialogComponent

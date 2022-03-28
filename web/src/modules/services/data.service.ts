@@ -30,6 +30,6 @@ export class DataService extends Request {
   }
 
   deleteColumn(data: ColumnData): Observable<any> {
-    return this.httpPut('column', data)
+    return this.httpPut('column/delete', { columnName: data.fieldName })
   }
 }
