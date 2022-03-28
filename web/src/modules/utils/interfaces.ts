@@ -23,6 +23,7 @@ export interface ColumnData {
   alignment: string;
   textWrap: boolean;
   dropdownValues?: Array<any>;
+  isPrimaryKey: boolean;
   customAttributes?: object;
 }
 
