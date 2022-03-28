@@ -24,4 +24,15 @@ export class SocketService {
       };
     });
   }
+
+  columnChanges(): any {
+    return new Observable(observer => {
+      this.socket.on(SocketEvents.Column, message => {
+        observer.next(message);
+      });
+      return () => {
+        this.socket.disconnect();
+      };
+    });
+  }
 }
