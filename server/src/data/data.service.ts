@@ -83,7 +83,7 @@ export class DataService {
         bodyRowData = result;
         return result;
       };
-      if (type === File.PASTE_NEXT) {
+      if (type === File.PASTE_NEXT || type === File.DELETE_ROW) {
         await flatterArray(bodyData['rowData']);
       }
 
@@ -111,11 +111,14 @@ export class DataService {
             rowFileData.push(rowData);
             break;
           case File.DELETE_ROW:
-            if (rowData.id !== Number(id)) {
-              isIdFound && Object.assign(rowData, { id: rowData.id - 1 });
-              rowFileData.push(rowData);
+            if (!includes(rowIds, rowData.id)) {
+              rowFileData.push(
+                Object.assign(rowData, {
+                  id: rowData.id - minusCount,
+                }),
+              );
             } else {
-              isIdFound = true;
+              minusCount++;
             }
             break;
           case File.PASTE_NEXT:
@@ -256,8 +259,8 @@ export class DataService {
     return readFileJson();
   }
 
-  async deleteRow(id: number): Promise<FileData> {
-    await this.readFileStreamByRow(File.DELETE_ROW, id);
+  async deleteRow(bodyData: any): Promise<FileData> {
+    await this.readFileStreamByRow(File.DELETE_ROW, null, bodyData, null);
     return readFileJson();
   }
 }
