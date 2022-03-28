@@ -6,4 +6,5 @@ const Row = {
 
 export const SocketEvents = {
     Row: Row,
+    Column: 'column'
 };

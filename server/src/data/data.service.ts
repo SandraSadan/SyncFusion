@@ -41,7 +41,7 @@ export class DataService {
         (aData) => (hashTable[aData.id] = { ...aData, subtasks: [] }),
       );
       dataset.forEach((aData) => {
-        if (aData.parentId !== 0)
+        if (aData.parentId > 0)
           hashTable[aData.parentId].subtasks.push(hashTable[aData.id]);
         else dataTree.push(hashTable[aData.id]);
       });
