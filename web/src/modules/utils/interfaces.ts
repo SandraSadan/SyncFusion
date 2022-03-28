@@ -8,7 +8,7 @@ export interface TableData {
   subtasks?: TableData[];
 }
 
-export interface Column {
+export interface ColumnData {
   name: string;
   fieldName: string;
   dataType: string;
@@ -19,5 +19,6 @@ export interface Column {
   backgroundColor: string;
   alignment: string;
   textWrap: boolean;
+  dropdownValues?: Array<any>;
 }
 

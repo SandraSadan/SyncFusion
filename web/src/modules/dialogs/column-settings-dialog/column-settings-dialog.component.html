@@ -1,0 +1,77 @@
+<p>{{ actionPerformed | titlecase }} Column</p>
+<form #columnForm="ngForm">
+    <mat-form-field appearance="fill">
+        <mat-label>Name</mat-label>
+        <input type="text" name="name" matInput [(ngModel)]="columnDetails.name" required>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+        <mat-label>Data Type</mat-label>
+        <mat-select name="dataType" [(ngModel)]="columnDetails.dataType" required>
+            <mat-option value="string">Text</mat-option>
+            <mat-option value="number">Number</mat-option>
+            <mat-option value="date">Date</mat-option>
+            <mat-option value="boolean">Boolean</mat-option>
+            <mat-option value="dropdown">Drop-down list</mat-option>
+        </mat-select>
+    </mat-form-field>
+    <ng-container *ngIf="columnDetails.dataType=='dropdown'">
+        <mat-form-field appearance="fill">
+            <input type="text" name="name" matInput [(ngModel)]="fieldValue" (keydown.enter)="addValue()">
+        </mat-form-field>
+        <mat-form-field>
+            <mat-chip-list aria-label="Dropdown values">
+                <mat-chip *ngFor="let option of columnDetails.dropdownValues; let i = index">{{ option }} <p
+                        (click)="removeValue(i)">XX</p>
+                </mat-chip>
+            </mat-chip-list>
+        </mat-form-field>
+    </ng-container>
+    <mat-form-field appearance="fill">
+        <mat-label>Default Value</mat-label>
+        <ng-container [ngSwitch]="columnDetails.dataType">
+            <input *ngSwitchCase="'string'" type="text" name="defaultValue" matInput
+                [(ngModel)]="columnDetails.defaultValue" required>
+
+            <mat-select *ngSwitchCase="'boolean'" name="defaultValue" [(ngModel)]="columnDetails.defaultValue" required>
+                <mat-option value="true">True</mat-option>
+                <mat-option value="false">False</mat-option>
+            </mat-select>
+
+            <mat-select *ngSwitchCase="'dropdown'" name="defaultValue" [(ngModel)]="columnDetails.defaultValue" required>
+                <mat-option *ngFor="let option of columnDetails.dropdownValues" [value]="option">{{option}}</mat-option>
+            </mat-select>
+
+            <input *ngSwitchDefault [type]="columnDetails.dataType" name="defaultValue" matInput
+                [(ngModel)]="columnDetails.defaultValue" required>
+        </ng-container>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+        <mat-label>Minimum Width</mat-label>
+        <input type="number" name="minimumWidth" matInput [(ngModel)]="columnDetails.minimumWidth" required>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+        <mat-label>Font Size</mat-label>
+        <input type="number" name="fontSize" matInput [(ngModel)]="columnDetails.fontSize" required>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+        <mat-label>Font Color</mat-label>
+        <input type="text" name="fontColor" matInput [(ngModel)]="columnDetails.fontColor" required>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+        <mat-label>Background Color</mat-label>
+        <input type="text" name="backgroundColor" matInput [(ngModel)]="columnDetails.backgroundColor" required>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+        <mat-label>Alignment</mat-label>
+        <mat-select name="alignment" [(ngModel)]="columnDetails.alignment" required>
+            <mat-option value="left">Left</mat-option>
+            <mat-option value="center">Center</mat-option>
+            <mat-option value="right">Right</mat-option>
+        </mat-select>
+    </mat-form-field>
+    <mat-checkbox [checked]="columnDetails.textWrap" name="textWrap" (change)="changeTextWrap()" required>
+        Text Wrap
+    </mat-checkbox>
+    <button mat-raised-button [disabled]="!columnForm.valid" (click)="saveColumnDetails()">Save</button>
+    <button type="button" (click)="dialogRef.close()">Cancel</button>
+</form>
