@@ -126,6 +126,7 @@ export class DataService {
               rowFileData.push(
                 Object.assign(rowData, {
                   id: rowData.id - minusCount + plussCount,
+                  parentId: rowData.parentId - minusCount,
                 }),
               );
             } else {
