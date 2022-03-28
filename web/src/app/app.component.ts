@@ -14,7 +14,7 @@ import {
   SelectionSettingsModel,
   TreeGridComponent
 } from '@syncfusion/ej2-angular-treegrid';
-import { get, find } from 'lodash';
+import { get, find, map } from 'lodash';
 import { ColumnSettingsDialogComponent } from 'src/modules/dialogs/column-settings-dialog/column-settings-dialog.component';
 import { DeleteDialogComponent } from 'src/modules/dialogs/delete-dialog/delete-dialog.component';
 
@@ -64,6 +64,7 @@ export class AppComponent {
     allowEditOnDblClick: true,
     newRowPosition: 'Top',
     showConfirmDialog: false,
+    showDeleteConfirmDialog: true,
     mode: 'Dialog',
   };
 
@@ -87,12 +88,13 @@ export class AppComponent {
     this.treeGrid.selectionSettings = this.selectionOptions;
     this.treeGrid.allowMultiSorting = false;
     this.treeGrid.allowFiltering = false;
+    this.treeGrid.filterSettings = { type: 'FilterBar', hierarchyMode: 'Parent', mode: 'Immediate' };
   }
 
   initiateSockets(): void {
     this.socketService.columnChanges().subscribe((res: any) => {
       this.data = get(res, 'data', []);
-      this.columnList = get(res, 'columns', []);
+      this.assignColumnData(get(res, 'columns', []));
     });
   }
 
@@ -107,8 +109,24 @@ export class AppComponent {
   getColumn(): void {
     this.dataService.getColumn().subscribe({
       next: (res) => {
-        this.columnList = get(res, 'column', []);
+        this.assignColumnData(get(res, 'column', []));
       }
+    })
+  }
+
+  assignColumnData(columns: ColumnData[]): void {
+    this.columnList = map(columns, column => {
+      column['customAttributes'] = {
+        'style': {
+          'background-color': column.backgroundColor,
+          'font-size': column.fontSize + 'px',
+          'color': column.fontColor,
+          'min-width': '150px',
+          'width': column.minimumWidth
+        },
+        'class': column.textWrap ? 'text-wrap': 'text-truncate'
+      };
+      return column;
     })
   }
 
@@ -140,21 +158,27 @@ export class AppComponent {
     }
   }
 
+  changeCheckboxValue(args: any, value: boolean): void {
+    if (args.event.target.classList.contains('e-checkboxspan')) {
+      const checkbox = args.element.querySelector('.e-checkbox');
+      checkbox.checked = value;
+    }
+  }
+
   // TODO need to change the arg type "any" and integrate API functionality
   contextMenuClick(args: any): void {
     const data = {
       id: this.data.length + 1,
     };
-    if (args.event.target.classList.contains('e-checkboxspan')) {
-      const checkbox = args.element.querySelector('.e-checkbox');
-      checkbox.checked = !checkbox.checked;
-    }
+    
     switch (args.item.id) {
       case 'add-row':
-        this.treeGrid.addRecord(data, args.rowInfo.rowIndex, 'Below'); // add record user can add row top or below using new row position
+        this.treeGrid.editSettings.newRowPosition = 'Below';
+        this.treeGrid.addRecord(); // add record user can add row top or below using new row position
         break;
       case 'add-child':
-        this.treeGrid.addRecord(data, args.rowInfo.rowIndex, 'Child'); // add child row
+        this.treeGrid.editSettings.newRowPosition = 'Child';
+        this.treeGrid.addRecord(); // add child row
         break;
       case 'delete-row':
         this.treeGrid.deleteRecord(); // delete the selected row
@@ -210,13 +234,19 @@ export class AppComponent {
         break;
       case 'filter-col':
         this.treeGrid.allowFiltering = !this.treeGrid.allowFiltering;
+        this.changeCheckboxValue(args, this.treeGrid.allowFiltering)
         break;
       case 'freeze-col':
         // Need to modify
-        this.treeGrid.frozenColumns = args.column.dirIndex;
+        this.treeGrid.enableVirtualization = false;
+        this.treeGrid.enableInfiniteScrolling = true;
+        this.treeGrid.getColumnByField(get(args, 'column.field')).freeze = 'Left';
+        this.treeGrid.frozenColumns = 1;
         break;
       case 'multi-sort':
+        this.treeGrid.allowSorting = !this.treeGrid.allowSorting;
         this.treeGrid.allowMultiSorting = !this.treeGrid.allowMultiSorting;
+        this.changeCheckboxValue(args, this.treeGrid.allowMultiSorting)
         break;
     }
   }
