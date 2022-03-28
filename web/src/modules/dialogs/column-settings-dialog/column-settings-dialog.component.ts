@@ -43,6 +43,7 @@ export class ColumnSettingsDialogComponent implements OnInit {
   saveColumnDetails(): void {
     this.isLoading = true;
     if (this.actionPerformed === 'add') {
+      this.columnDetails.isPrimaryKey = false;
       this.columnDetails.fieldName = camelCase(this.columnDetails.name);
       this.dataService.addColumn(this.columnDetails).subscribe({
         next: () => {

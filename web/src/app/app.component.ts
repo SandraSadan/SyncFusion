@@ -87,8 +87,9 @@ export class AppComponent {
     this.treeGrid.editSettings = this.editSettings;
     this.treeGrid.selectionSettings = this.selectionOptions;
     this.treeGrid.allowMultiSorting = false;
+    this.treeGrid.allowSorting = false;
+    this.treeGrid.allowSelection = false;
     this.treeGrid.allowFiltering = false;
-    this.treeGrid.filterSettings = { type: 'FilterBar', hierarchyMode: 'Parent', mode: 'Immediate' };
   }
 
   initiateSockets(): void {
@@ -187,7 +188,10 @@ export class AppComponent {
         this.treeGrid.startEdit(); // edit the selected row
         break;
       case 'multi-select':
+        this.treeGrid.allowSelection = !this.treeGrid.allowSelection;
         this.treeGrid.selectionSettings.type = 'Multiple'; // enable multi selection
+        this.treeGrid.selectionSettings.mode = 'Row';
+        this.changeCheckboxValue(args, this.treeGrid.allowSelection)
         break;
       case 'copy-row':
         this.selectedIndex = this.treeGrid['getSelectedRowIndexes']()[0]; // select the records on perform Copy action
@@ -234,14 +238,13 @@ export class AppComponent {
         break;
       case 'filter-col':
         this.treeGrid.allowFiltering = !this.treeGrid.allowFiltering;
+        // this.treeGrid.filterSettings.type = 'Menu';
         this.changeCheckboxValue(args, this.treeGrid.allowFiltering)
         break;
       case 'freeze-col':
-        // Need to modify
         this.treeGrid.enableVirtualization = false;
         this.treeGrid.enableInfiniteScrolling = true;
-        this.treeGrid.getColumnByField(get(args, 'column.field')).freeze = 'Left';
-        this.treeGrid.frozenColumns = 1;
+        this.treeGrid.frozenColumns = args.column.dirIndex + 1;
         break;
       case 'multi-sort':
         this.treeGrid.allowSorting = !this.treeGrid.allowSorting;
