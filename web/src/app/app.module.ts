@@ -17,7 +17,9 @@ import {
   ColumnChooserService,
   ToolbarService,
   FilterService,
-  FreezeService
+  FreezeService,
+  InfiniteScrollService,
+  PageService
 } from '@syncfusion/ej2-angular-treegrid';
 
 import { ColumnSettingsDialogModule } from 'src/modules/dialogs/column-settings-dialog/column-settings-dialog.module';
@@ -51,7 +53,9 @@ import { NotificationService } from 'src/modules/services/notification.service';
     ColumnChooserService,
     ToolbarService,
     FilterService,
-    FreezeService
+    FreezeService,
+    InfiniteScrollService,
+    PageService
   ]
 })
 export class AppModule { }
