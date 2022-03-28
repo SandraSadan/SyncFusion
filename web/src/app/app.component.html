@@ -4,7 +4,7 @@
     <e-columns>
         <ng-container *ngFor="let column of columnList">
             <e-column [field]="column.fieldName" [headerText]="column.name" [textAlign]="column.alignment"
-                [width]="column.minimumWidth" [defaultValue]="column.defaultValue"></e-column>
+            [defaultValue]="column.defaultValue" [customAttributes]="column.customAttributes"></e-column>
         </ng-container>
     </e-columns>
 </ejs-treegrid>

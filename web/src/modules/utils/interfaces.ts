@@ -20,5 +20,6 @@ export interface ColumnData {
   alignment: string;
   textWrap: boolean;
   dropdownValues?: Array<any>;
+  customAttributes?: object;
 }
 
