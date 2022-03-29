@@ -99,6 +99,9 @@ export class AppComponent {
       this.data = get(res, 'data', []);
       this.assignColumnData(get(res, 'columns', []));
     });
+    this.socketService.rowChanges().subscribe((res: any) => {
+      this.data = get(res, 'data', []);
+    });
   }
 
   getList(): void {
@@ -195,12 +198,12 @@ export class AppComponent {
         break;
       case 'add-child':
         this.treeGrid.editSettings.newRowPosition = 'Child';
+        this.selectedIndex = args.rowInfo.rowData.id;
         this.treeGrid.addRecord();
         break;
       case 'delete-row':
         this.dataService.deleteRow(args.rowInfo.rowData).subscribe({
           next: (res) => {
-            this.data = res.data;
             this.notification.openSuccessSnackBar('Row deleted successfully');
           }
         });
@@ -289,7 +292,6 @@ export class AppComponent {
         args.data.parentId = this.actionType === 'add-row' ? 0: this.selectedIndex;
         this.dataService.addRow(args.data).subscribe({
           next: (res) => {
-            this.data = res.data;
             this.notification.openSuccessSnackBar('Row added successfully');
           }
         });
@@ -297,7 +299,6 @@ export class AppComponent {
       if (args.action === "edit") {
         this.dataService.editRow(args.data.id, args.data).subscribe({
           next: (res) => {
-            this.data = res.data;
             this.notification.openSuccessSnackBar('Row edited successfully');
           }
         });
