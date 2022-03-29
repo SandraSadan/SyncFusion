@@ -1,6 +1,6 @@
 <ejs-treegrid #treeGrid [dataSource]='data' [treeColumnIndex]='1' [showColumnChooser]='true'
     (contextMenuOpen)="contextMenuOpen($event)" (contextMenuClick)="contextMenuClick($event)"
-    [enableVirtualization]='true' [height]='500' childMapping='subtasks'>
+    [enableVirtualization]='true' [height]='500' childMapping='subtasks' (actionComplete)="actionComplete($event)">
     <e-columns>
         <ng-container *ngFor="let column of columnList">
             <e-column [field]="column.fieldName" [headerText]="column.name" [textAlign]="column.alignment"

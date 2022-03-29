@@ -6,6 +6,9 @@ export interface TableData {
   gender: string;
   ipAddress: string;
   subtasks?: TableData[];
+  parentId: number;
+  address: string;
+  region: string;
 }
 
 export interface ColumnData {

@@ -8,5 +8,6 @@ export enum File {
   CREATE_COLUMN = 'create_column',
   GET_ROW = 'get_row',
   GET_COLUMN = 'get_column',
-  REMOVE_PROPERTY = 'remove_property'
+  REMOVE_PROPERTY = 'remove_property',
+  PASTE_NEXT = "paste_next"
 }

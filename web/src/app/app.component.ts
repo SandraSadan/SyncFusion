@@ -18,7 +18,6 @@ import { get, find, map } from 'lodash';
 import { ColumnSettingsDialogComponent } from 'src/modules/dialogs/column-settings-dialog/column-settings-dialog.component';
 import { DeleteDialogComponent } from 'src/modules/dialogs/delete-dialog/delete-dialog.component';
 import { NotificationService } from 'src/modules/services/notification.service';
-
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -69,6 +68,7 @@ export class AppComponent {
     showDeleteConfirmDialog: true,
     mode: 'Dialog',
   };
+  actionType: string = '';
 
   @ViewChild('treeGrid')
   public treeGrid!: TreeGridComponent;
@@ -185,21 +185,25 @@ export class AppComponent {
 
   // TODO need to change the arg type "any" and integrate API functionality
   contextMenuClick(args: any): void {
-    const data = {
-      id: this.data.length + 1,
-    };
+    this.actionType = args.item.id;
 
     switch (args.item.id) {
       case 'add-row':
         this.treeGrid.editSettings.newRowPosition = 'Below';
-        this.treeGrid.addRecord(); // add record user can add row top or below using new row position
+        this.selectedIndex = args.rowInfo.rowData.id;
+        this.treeGrid.addRecord();
         break;
       case 'add-child':
         this.treeGrid.editSettings.newRowPosition = 'Child';
-        this.treeGrid.addRecord(); // add child row
+        this.treeGrid.addRecord();
         break;
       case 'delete-row':
-        this.treeGrid.deleteRecord(); // delete the selected row
+        this.dataService.deleteRow(args.rowInfo.rowData).subscribe({
+          next: (res) => {
+            this.data = res.data;
+            this.notification.openSuccessSnackBar('Row deleted successfully');
+          }
+        });
         break;
       case 'edit-row':
         this.treeGrid.startEdit(); // edit the selected row
@@ -275,6 +279,29 @@ export class AppComponent {
         this.treeGrid.allowMultiSorting = !this.treeGrid.allowMultiSorting;
         this.changeCheckboxValue(args, this.treeGrid.allowMultiSorting)
         break;
+    }
+  }
+
+  actionComplete(args: TreeGridComponent["actionComplete"]): void {
+    if (args.requestType === "save") {
+      if (args.action === "add") {
+        args.data.id = this.selectedIndex + 1;
+        args.data.parentId = this.actionType === 'add-row' ? 0: this.selectedIndex;
+        this.dataService.addRow(args.data).subscribe({
+          next: (res) => {
+            this.data = res.data;
+            this.notification.openSuccessSnackBar('Row added successfully');
+          }
+        });
+      }
+      if (args.action === "edit") {
+        this.dataService.editRow(args.data.id, args.data).subscribe({
+          next: (res) => {
+            this.data = res.data;
+            this.notification.openSuccessSnackBar('Row edited successfully');
+          }
+        });
+      }
     }
   }
 }
