@@ -195,6 +195,7 @@ export class AppComponent {
         break;
       case 'add-child':
         this.treeGrid.editSettings.newRowPosition = 'Child';
+        this.selectedIndex = args.rowInfo.rowData.id;
         this.treeGrid.addRecord();
         break;
       case 'delete-row':
