@@ -26,10 +26,10 @@ import { NotificationService } from 'src/modules/services/notification.service';
 export class AppComponent {
 
   constructor(
+    private notification: NotificationService,
     private socketService: SocketService,
     private dataService: DataService,
-    private matDialog: MatDialog,
-    private notification: NotificationService,
+    private matDialog: MatDialog
   ) { }
 
   title: string = 'syncfusion';
@@ -127,37 +127,52 @@ export class AppComponent {
           'min-width': '150px',
           'width': column.minimumWidth
         },
-        'class': column.textWrap ? 'text-wrap': 'text-truncate'
+        'class': column.textWrap ? 'text-wrap' : 'text-truncate'
       };
       return column;
     })
   }
 
   contextMenuOpen(args: any): void {
-    if (this.isInitialLoad) {
-      this.isInitialLoad = false;
-      const parentNode: any[] = [],
-        customElement = (args as BeforeOpenCloseEventArgs).element.querySelectorAll('.c-custom');
+    const parentNode: any[] = [],
+      customElement = (args as BeforeOpenCloseEventArgs).element.querySelectorAll(this.isInitialLoad ? '.c-custom' : '.e-checkbox');
+    this.isInitialLoad = false;
 
-      // To append checkbox for elements
-      if (customElement.length) {
-        customElement.forEach((innerEle: Element) => {
-          parentNode.push(innerEle.parentElement);
-        });
-        parentNode.forEach((ele) => {
-          const text = ele.textContent;
-          ele.innerText = '';
-          let inputEle: any = createElement('input');
-          inputEle.type = 'checkbox';
+    // To append checkbox for elements
+    if (customElement.length) {
+      customElement.forEach((innerEle: Element) => {
+        parentNode.push(innerEle.parentElement);
+      });
+      parentNode.forEach((ele) => {
+        let value = false;
+        switch (ele.outerText) {
+          case 'Multi Select':
+            value = this.treeGrid.allowSelection;
+            break;
+          case 'Filter Column':
+            value = this.treeGrid.allowFiltering;
+            break;
+          case 'Freeze Column':
+            value = this.treeGrid.frozenColumns >= (args.column.index + 1) && this.treeGrid.frozenColumns > 0;
+            break;
+          case 'Multi Sort':
+            value = this.treeGrid.allowMultiSorting;
+            break;
+        }
+        const text = ele.textContent;
+        ele.innerText = '';
+        let inputEle: any = createElement('input');
+        inputEle.type = 'checkbox';
 
-          inputEle.setAttribute('class', 'e-checkbox');
-          ele.prepend(inputEle);
-          let spanEle = createElement('span');
-          spanEle.textContent = text;
-          spanEle.setAttribute('class', 'e-checkboxspan');
-          ele.appendChild(spanEle);
-        });
-      }
+        inputEle.setAttribute('class', 'e-checkbox');
+        value ? inputEle.setAttribute('checked', value)
+          : inputEle.removeAttribute('checked');
+        ele.prepend(inputEle);
+        let spanEle = createElement('span');
+        spanEle.textContent = text;
+        spanEle.setAttribute('class', 'e-checkboxspan');
+        ele.appendChild(spanEle);
+      });
     }
   }
 
@@ -195,8 +210,6 @@ export class AppComponent {
         break;
       case 'multi-select':
         this.treeGrid.allowSelection = !this.treeGrid.allowSelection;
-        this.treeGrid.selectionSettings.type = 'Multiple'; // enable multi selection
-        this.treeGrid.selectionSettings.mode = 'Row';
         this.changeCheckboxValue(args, this.treeGrid.allowSelection)
         break;
       case 'copy-row':
@@ -248,9 +261,18 @@ export class AppComponent {
         this.changeCheckboxValue(args, this.treeGrid.allowFiltering)
         break;
       case 'freeze-col':
-        this.treeGrid.enableVirtualization = false;
-        this.treeGrid.enableInfiniteScrolling = true;
-        this.treeGrid.frozenColumns = args.column.dirIndex + 1;
+        this.isInitialLoad = true;
+        if (this.treeGrid.frozenColumns == 0 || (args.column.dirIndex == 0 && this.treeGrid.frozenColumns == 1)) {
+          this.treeGrid.enableVirtualization = !this.treeGrid.enableVirtualization;
+          this.treeGrid.enableInfiniteScrolling = !this.treeGrid.enableInfiniteScrolling;
+          this.treeGrid.frozenColumns = this.treeGrid.enableInfiniteScrolling ? args.column.dirIndex + 1 : 0;
+        } else if (this.treeGrid.frozenColumns == args.column.dirIndex + 1) {
+          this.treeGrid.frozenColumns = this.treeGrid.frozenColumns - 1;
+        } else if (this.treeGrid.frozenColumns < args.column.dirIndex + 1) {
+          this.treeGrid.frozenColumns = args.column.dirIndex + 1;
+        } else {
+          this.notification.openWarningSnackBar("Action is not allowed");
+        }
         break;
       case 'multi-sort':
         this.treeGrid.allowSorting = !this.treeGrid.allowSorting;
