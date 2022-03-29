@@ -14,9 +14,9 @@ export class SocketService {
     this.socket = io(environment.socketUrl);
   }
 
-  rowAdded(): any {
+  rowChanges(): any {
     return new Observable(observer => {
-      this.socket.on(SocketEvents.Row.added, message => {
+      this.socket.on(SocketEvents.Row, message => {
         observer.next(message);
       });
       return () => {
