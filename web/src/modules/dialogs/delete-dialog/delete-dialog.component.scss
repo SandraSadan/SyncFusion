@@ -1,0 +1,21 @@
+.delete-modal {
+    h3 {
+        font-size: 32px;
+        font-weight: 500;
+        color: #000000;
+        margin-bottom: 16px;
+    }
+    p {
+        font-size: 16px;
+        color: rgba(0, 0, 0, 0.6);
+        margin-bottom: 10px;
+        span {
+            font-weight: 500;
+            color: rgba(0, 0, 0, 0.85);
+        }
+    }
+    .modal-button {
+        display: flex;
+        justify-content: flex-end;
+    }
+}

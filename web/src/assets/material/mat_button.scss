@@ -1,0 +1,26 @@
+.modal-button {
+    .mat-button {
+        margin: 0 0 0 12px;
+    }
+}
+
+.mat-button.mat-primary, .mat-icon-button.mat-primary, .mat-stroked-button.mat-primary {
+    color: #e3165b;
+    &:hover, &:active, &:focus {
+        background-color: rgba(227, 22, 91, 0.04) !important;
+    }
+}
+
+.small-button.mat-icon-button {
+    margin: 2px;
+    border-radius: 3px;
+}
+.small-button.mat-icon-button, .small-button .mat-icon-button {
+    width: 20px;
+    height: 20px;
+    line-height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
