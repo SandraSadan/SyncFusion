@@ -1,6 +1,7 @@
 export interface FileData {
-  settings: '';
+  settings: any;
   data: any;
+  columns?: any;
 }
 
 export interface Response {

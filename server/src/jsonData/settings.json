@@ -1,0 +1,25 @@
+{
+  "settings": {
+    "settings": {
+      "sortSettings": {},
+      "editSettings": {
+        "allowEditing": false,
+        "allowAdding": true,
+        "allowDeleting": true,
+        "allowEditOnDblClick": true,
+        "newRowPosition": "Top",
+        "showConfirmDialog": false,
+        "showDeleteConfirmDialog": true,
+        "mode": "Dialog"
+      },
+      "selectionSettings": { "type": "Multiple", "mode": "Row" },
+      "allowMultiSorting": false,
+      "allowSorting": false,
+      "allowSelection": false,
+      "allowFiltering": false,
+      "enableVirtualization": true,
+      "enableInfiniteScrolling": false,
+      "frozenColumns": 0
+    }
+  }
+}
