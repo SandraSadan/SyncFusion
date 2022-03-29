@@ -1,0 +1,19 @@
+.mat-chip-list-wrapper  {
+    margin-bottom: 10px !important;
+    .mat-standard-chip, input.mat-input-element {
+        display: flex;
+        align-items: center;
+        background-color: rgb(227 22 91 / 19%);
+        color: rgba(0, 0, 0, 0.5);
+        margin: 8px 2px 4px!important;
+    }
+}
+
+.mat-form-field-type-mat-chip-list {
+    .mat-form-field-underline {
+        bottom: 0.8rem;
+    }
+    .mat-chip-list {
+        min-height: 32px;
+    }
+}

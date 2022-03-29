@@ -24,6 +24,7 @@ import {
 
 import { ColumnSettingsDialogModule } from 'src/modules/dialogs/column-settings-dialog/column-settings-dialog.module';
 import { NotificationService } from 'src/modules/services/notification.service';
+import { DeleteDialogModule } from 'src/modules/dialogs/delete-dialog/delete-dialog.module';
 
 
 @NgModule({
@@ -40,7 +41,8 @@ import { NotificationService } from 'src/modules/services/notification.service';
     TreeGridModule,
     MatDialogModule,
     MatSnackBarModule,
-    ColumnSettingsDialogModule
+    ColumnSettingsDialogModule,
+    DeleteDialogModule
   ],
   bootstrap: [AppComponent],
   providers: [
