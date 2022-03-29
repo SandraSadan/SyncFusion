@@ -297,23 +297,24 @@ export class DataService {
 
         rowDataParser.on('data', (rowData: any) => {
           rowCount++;
-          if (
-            bodyData.dataType === 'number' &&
-            !isNaN(Number(rowData[bodyData.fieldName]))
-          ) {
-            rowData[bodyData.fieldName] = Number(rowData[bodyData.fieldName]);
-          } else if (bodyData.dataType === 'string') {
-            rowData[bodyData.fieldName] = String(rowData[bodyData.fieldName]);
-          } else if (
-            bodyData.dataType === 'boolean' &&
-            !isArray(rowData[bodyData.fieldName]) &&
-            !isDate(rowData[bodyData.fieldName])
-          ) {
-            rowData[bodyData.fieldName] =
-              rowData[bodyData.fieldName] === 'true' ||
-              Number(rowData[bodyData.fieldName]) > 0;
-          } else {
-            rowData[bodyData.fieldName] = bodyData.defaultValue;
+          switch (true) {
+            case bodyData.dataType === 'number' &&
+              !isNaN(Number(rowData[bodyData.fieldName])):
+              rowData[bodyData.fieldName] = Number(rowData[bodyData.fieldName]);
+              break;
+            case bodyData.dataType === 'string':
+              rowData[bodyData.fieldName] = String(rowData[bodyData.fieldName]);
+              break;
+            case bodyData.dataType === 'boolean' &&
+              !isArray(rowData[bodyData.fieldName]) &&
+              !isDate(rowData[bodyData.fieldName]):
+              rowData[bodyData.fieldName] =
+                rowData[bodyData.fieldName] === 'true' ||
+                Number(rowData[bodyData.fieldName]) > 0;
+              break;
+            default:
+              rowData[bodyData.fieldName] = bodyData.defaultValue;
+              break;
           }
           rowFileData.push(rowData);
         });
