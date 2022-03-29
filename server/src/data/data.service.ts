@@ -257,12 +257,9 @@ export class DataService {
       });
       columnDataParser.on('data', (columnData: Column) => {
         if (type === File.UPDATE_COLUMN) {
-          if (
+          isDataTypeChanged =
             columnData.fieldName === fieldName &&
-            columnData.dataType !== bodyData.dataType
-          ) {
-            isDataTypeChanged = true;
-          }
+            columnData.dataType !== bodyData.dataType;
           if (columnData.fieldName === fieldName) {
             Object.assign(columnData, bodyData);
           }
