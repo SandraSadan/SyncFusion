@@ -20,12 +20,12 @@ export class ColumnController {
     return this.columnService.deleteColumn(columnName);
   }
 
-  @Post('/add')
+  @Post('')
   async addColumn(@Body() column: Column): Promise<FileData> {
     return this.columnService.createColumn(column);
   }
 
-  @Put('/update')
+  @Put('')
   async updateColum(@Body() column: Column): Promise<FileData> {
     return this.columnService.updateColumn(column);
   }

@@ -35,13 +35,13 @@ export class DataController {
     return this.dataService.updateRow(id, bodyData);
   }
 
-  @Delete('delete/row/:id')
-  async deleteRows(@Param('id') id: number): Promise<FileData> {
-    return this.dataService.deleteRow(id);
+  @Put('delete/row')
+  async deleteRows(@Body() bodyData: any): Promise<FileData> {
+    return this.dataService.deleteRow(bodyData);
   }
 
   @Put('paste/row')
   async pasteData(@Body() bodyData: any): Promise<FileData> {
-    return this.dataService.pasteRow(bodyData.id, bodyData.any);
+    return this.dataService.pasteRow(bodyData);
   }
 }

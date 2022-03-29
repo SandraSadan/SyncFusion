@@ -1,73 +1,61 @@
 import { Component, ViewChild } from '@angular/core';
-import { TableData, Column } from 'src/modules/utils/interfaces';
+import { MatDialog } from '@angular/material/dialog';
 
 import { createElement } from '@syncfusion/ej2-base';
 import { BeforeOpenCloseEventArgs } from '@syncfusion/ej2-inputs';
+
 import { SocketService } from 'src/modules/services/socket.service';
 import { DataService } from 'src/modules/services/data.service';
+import { TableData, ColumnData } from 'src/modules/utils/interfaces';
 
-import { 
-  SortService, 
-  ResizeService, 
-  ContextMenuService, 
-  EditService, 
-  VirtualScrollService, 
-  ColumnChooserService, 
-  ToolbarService, 
-  FilterService, 
-  EditSettingsModel, 
-  SortSettingsModel, 
-  SelectionSettingsModel, 
+import {
+  EditSettingsModel,
+  SortSettingsModel,
+  SelectionSettingsModel,
   TreeGridComponent
 } from '@syncfusion/ej2-angular-treegrid';
-
-import { get } from 'lodash';
+import { get, find, map } from 'lodash';
+import { ColumnSettingsDialogComponent } from 'src/modules/dialogs/column-settings-dialog/column-settings-dialog.component';
+import { DeleteDialogComponent } from 'src/modules/dialogs/delete-dialog/delete-dialog.component';
+import { NotificationService } from 'src/modules/services/notification.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
-  providers: [
-    SortService,
-    ContextMenuService,
-    EditService,
-    ResizeService,
-    VirtualScrollService,
-    ColumnChooserService,
-    ToolbarService,
-    FilterService
-  ]
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
+
   constructor(
+    private notification: NotificationService,
     private socketService: SocketService,
     private dataService: DataService,
-  ) {}
+    private matDialog: MatDialog
+  ) { }
 
   title: string = 'syncfusion';
-  data: TableData[] = []; // Need to change the type from any when actual data is rendered
-  columnList: Column[] = [];
+  data: TableData[] = [];
+  columnList!: ColumnData[];
   isInitialLoad: boolean = true;
   sortSettings!: SortSettingsModel;
   selectionOptions!: SelectionSettingsModel;
   selectedIndex!: number;
-  rowIndex!: number;
   selectedRecord!: Object;
   contextMenuItems = [
     { text: "Add Next", target: ".e-content", id: "add-row" },
     { text: "Add Child", target: ".e-content", id: "add-child" },
-    { text: "Delete Row", target: ".e-content", id: "delete-row" },
     { text: "Edit Row", target: ".e-content", id: "edit-row" },
+    { text: "Delete Row", target: ".e-content", id: "delete-row" },
     { text: "Multi Select", target: ".e-content", id: "multi-select", iconCss: 'c-custom' },
     { text: "Copy Rows", target: ".e-content", id: "copy-row" },
     { text: "Cut Rows", target: ".e-content", id: "cut-rows" },
     { text: "Paste Next", target: ".e-content", id: "paste-next" },
     { text: "Paste Child", target: ".e-content", id: "paste-child" },
-    { text: 'Edit Column', target: '.e-headercontent', id: 'edit-col' },
     { text: 'New Column', target: '.e-headercontent', id: 'new-col' },
+    { text: 'Edit Column', target: '.e-headercontent', id: 'edit-col' },
     { text: 'Delete Column', target: '.e-headercontent', id: 'del-col' },
     { text: 'Choose Column', target: '.e-headercontent', id: 'choose-col' },
-    { text: 'Freeze Column', target: '.e-headercontent', id: 'freeze-col', iconCss: 'c-custom'},
+    { text: 'Freeze Column', target: '.e-headercontent', id: 'freeze-col', iconCss: 'c-custom' },
     { text: 'Filter Column', target: '.e-headercontent', id: 'filter-col', iconCss: 'c-custom' },
     { text: 'Multi Sort', target: '.e-headercontent', id: 'multi-sort', iconCss: 'c-custom' },
   ];
@@ -78,8 +66,10 @@ export class AppComponent {
     allowEditOnDblClick: true,
     newRowPosition: 'Top',
     showConfirmDialog: false,
+    showDeleteConfirmDialog: true,
     mode: 'Dialog',
   };
+
   @ViewChild('treeGrid')
   public treeGrid!: TreeGridComponent;
 
@@ -90,20 +80,24 @@ export class AppComponent {
     };
     this.getList();
     this.getColumn();
-    this.socketService.rowAdded().subscribe((data: string) => {
-      console.log(data);
-    });
+    this.initiateSockets();
   }
 
-  assignSubtasks(): void {
-    this.data.forEach((value, index: number) => {
-      value['id'] = index;
-    });
-    // To assign subtasks for expand and collapse
-    this.data.forEach((value, index: number) => {
-      if (value['id'] % 5 === 0) {
-        value['subtasks'] = this.data.splice(index+1, 4);
-      }
+  ngAfterViewInit() {
+    this.treeGrid.contextMenuItems = this.contextMenuItems;
+    this.treeGrid.sortSettings = this.sortSettings;
+    this.treeGrid.editSettings = this.editSettings;
+    this.treeGrid.selectionSettings = this.selectionOptions;
+    this.treeGrid.allowMultiSorting = false;
+    this.treeGrid.allowSorting = false;
+    this.treeGrid.allowSelection = false;
+    this.treeGrid.allowFiltering = false;
+  }
+
+  initiateSockets(): void {
+    this.socketService.columnChanges().subscribe((res: any) => {
+      this.data = get(res, 'data', []);
+      this.assignColumnData(get(res, 'columns', []));
     });
   }
 
@@ -111,7 +105,6 @@ export class AppComponent {
     this.dataService.getAllLists().subscribe({
       next: (res) => {
         this.data = get(res, 'data', []);
-        this.assignSubtasks();
       },
     });
   }
@@ -119,37 +112,74 @@ export class AppComponent {
   getColumn(): void {
     this.dataService.getColumn().subscribe({
       next: (res) => {
-        this.columnList = get(res, 'column', []);
+        this.assignColumnData(get(res, 'column', []));
       }
     })
   }
 
-  contextMenuOpen(args: any): void {
-    if (this.isInitialLoad) {
-      this.isInitialLoad = false;
-      this.rowIndex = args.rowInfo.rowIndex;
-      const parentNode: any[] = [],
-        customElement = (args as BeforeOpenCloseEventArgs).element.querySelectorAll('.c-custom');
-    
-      // To append checkbox for elements
-      if (customElement.length) {
-        customElement.forEach((innerEle: Element) => {
-          parentNode.push(innerEle.parentElement);
-        });
-        parentNode.forEach((ele) => {
-          const text = ele.textContent;
-          ele.innerText = '';
-          let inputEle: any = createElement('input');
-          inputEle.type = 'checkbox';
+  assignColumnData(columns: ColumnData[]): void {
+    this.columnList = map(columns, column => {
+      column['customAttributes'] = {
+        'style': {
+          'background-color': column.backgroundColor,
+          'font-size': column.fontSize + 'px',
+          'color': column.fontColor,
+          'min-width': '150px',
+          'width': column.minimumWidth
+        },
+        'class': column.textWrap ? 'text-wrap' : 'text-truncate'
+      };
+      return column;
+    })
+  }
 
-          inputEle.setAttribute('class', 'e-checkbox');
-          ele.prepend(inputEle);
-          let spanEle = createElement('span');
-          spanEle.textContent = text;
-          spanEle.setAttribute('class', 'e-checkboxspan');
-          ele.appendChild(spanEle);
-        });
-      }
+  contextMenuOpen(args: any): void {
+    const parentNode: any[] = [],
+      customElement = (args as BeforeOpenCloseEventArgs).element.querySelectorAll(this.isInitialLoad ? '.c-custom' : '.e-checkbox');
+    this.isInitialLoad = false;
+
+    // To append checkbox for elements
+    if (customElement.length) {
+      customElement.forEach((innerEle: Element) => {
+        parentNode.push(innerEle.parentElement);
+      });
+      parentNode.forEach((ele) => {
+        let value = false;
+        switch (ele.outerText) {
+          case 'Multi Select':
+            value = this.treeGrid.allowSelection;
+            break;
+          case 'Filter Column':
+            value = this.treeGrid.allowFiltering;
+            break;
+          case 'Freeze Column':
+            value = this.treeGrid.frozenColumns >= (args.column.index + 1) && this.treeGrid.frozenColumns > 0;
+            break;
+          case 'Multi Sort':
+            value = this.treeGrid.allowMultiSorting;
+            break;
+        }
+        const text = ele.textContent;
+        ele.innerText = '';
+        let inputEle: any = createElement('input');
+        inputEle.type = 'checkbox';
+
+        inputEle.setAttribute('class', 'e-checkbox');
+        value ? inputEle.setAttribute('checked', value)
+          : inputEle.removeAttribute('checked');
+        ele.prepend(inputEle);
+        let spanEle = createElement('span');
+        spanEle.textContent = text;
+        spanEle.setAttribute('class', 'e-checkboxspan');
+        ele.appendChild(spanEle);
+      });
+    }
+  }
+
+  changeCheckboxValue(args: any, value: boolean): void {
+    if (args.event.target.classList.contains('e-checkboxspan')) {
+      const checkbox = args.element.querySelector('.e-checkbox');
+      checkbox.checked = value;
     }
   }
 
@@ -158,27 +188,25 @@ export class AppComponent {
     const data = {
       id: this.data.length + 1,
     };
-    if (args.event.target.classList.contains('e-checkboxspan')) {
-      const checkbox = args.element.querySelector('.e-checkbox');
-      checkbox.checked = !checkbox.checked;
-    }
-    
-    const selectedRecord = this.selectedRecord ? this.selectedRecord: this.treeGrid['getSelectedRecords']()[0];
+
     switch (args.item.id) {
       case 'add-row':
-        this.treeGrid.addRecord(data, this.rowIndex, 'Below'); // add record user can add row top or below using new row position
+        this.treeGrid.editSettings.newRowPosition = 'Below';
+        this.treeGrid.addRecord(); // add record user can add row top or below using new row position
         break;
       case 'add-child':
-        this.treeGrid.addRecord(data, this.rowIndex, 'Child'); // add child row
+        this.treeGrid.editSettings.newRowPosition = 'Child';
+        this.treeGrid.addRecord(); // add child row
         break;
       case 'delete-row':
-        this.treeGrid.deleteRecord('id', selectedRecord); // delete the selected row
+        this.treeGrid.deleteRecord(); // delete the selected row
         break;
       case 'edit-row':
         this.treeGrid.startEdit(); // edit the selected row
         break;
       case 'multi-select':
-        this.treeGrid.selectionSettings.type = 'Multiple'; // enable multi selection
+        this.treeGrid.allowSelection = !this.treeGrid.allowSelection;
+        this.changeCheckboxValue(args, this.treeGrid.allowSelection)
         break;
       case 'copy-row':
         this.selectedIndex = this.treeGrid['getSelectedRowIndexes']()[0]; // select the records on perform Copy action
@@ -186,7 +214,6 @@ export class AppComponent {
         break;
       case 'paste-next':
         const index = this.treeGrid['getSelectedRowIndexes']()[0]; // delete the copied record
-        const record = this.treeGrid['getSelectedRecords']()[0];
         this.treeGrid.deleteRecord('id', this.selectedRecord);
         // Paste as Sibling or another separate row using Below, Above or Top newRowPosition
         this.treeGrid.addRecord(this.selectedRecord, index, 'Below');
@@ -196,7 +223,58 @@ export class AppComponent {
         const childIndex = this.treeGrid['getSelectedRowIndexes']()[0];
         this.treeGrid.addRecord(this.selectedRecord, childIndex - 1, 'Child'); // paste as Child
         break;
+      case 'new-col':
+        const dialogReference = this.matDialog.open(ColumnSettingsDialogComponent, {
+          width: '400px',
+          height: 'auto',
+          disableClose: true,
+        });
+        dialogReference.componentInstance.actionPerformed = 'add';
+        break;
+      case 'edit-col':
+        const dialogRef = this.matDialog.open(ColumnSettingsDialogComponent, {
+          width: '400px',
+          height: 'auto',
+          disableClose: true,
+        });
+        dialogRef.componentInstance.actionPerformed = 'edit';
+        dialogRef.componentInstance.columnDetails = find(this.columnList, { fieldName: get(args, 'column.field') }) as ColumnData;
+        break;
+      case 'del-col':
+        const deleteDialog = this.matDialog.open(DeleteDialogComponent, {
+          width: '400px',
+          height: 'auto',
+          disableClose: true,
+        });
+        deleteDialog.componentInstance.column = find(this.columnList, { fieldName: get(args, 'column.field') }) as ColumnData;
+        break;
+      case 'choose-col':
+        this.treeGrid.openColumnChooser();
+        break;
+      case 'filter-col':
+        this.treeGrid.allowFiltering = !this.treeGrid.allowFiltering;
+        // this.treeGrid.filterSettings.type = 'Menu';
+        this.changeCheckboxValue(args, this.treeGrid.allowFiltering)
+        break;
+      case 'freeze-col':
+        this.isInitialLoad = true;
+        if (this.treeGrid.frozenColumns == 0 || (args.column.dirIndex == 0 && this.treeGrid.frozenColumns == 1)) {
+          this.treeGrid.enableVirtualization = !this.treeGrid.enableVirtualization;
+          this.treeGrid.enableInfiniteScrolling = !this.treeGrid.enableInfiniteScrolling;
+          this.treeGrid.frozenColumns = this.treeGrid.enableInfiniteScrolling ? args.column.dirIndex + 1 : 0;
+        } else if (this.treeGrid.frozenColumns == args.column.dirIndex + 1) {
+          this.treeGrid.frozenColumns = this.treeGrid.frozenColumns - 1;
+        } else if (this.treeGrid.frozenColumns < args.column.dirIndex + 1) {
+          this.treeGrid.frozenColumns = args.column.dirIndex + 1;
+        } else {
+          this.notification.openWarningSnackBar("Action is not allowed");
+        }
+        break;
+      case 'multi-sort':
+        this.treeGrid.allowSorting = !this.treeGrid.allowSorting;
+        this.treeGrid.allowMultiSorting = !this.treeGrid.allowMultiSorting;
+        this.changeCheckboxValue(args, this.treeGrid.allowMultiSorting)
+        break;
     }
   }
 }
-

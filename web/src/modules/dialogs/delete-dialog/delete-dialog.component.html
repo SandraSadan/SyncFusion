@@ -1,0 +1,7 @@
+<p>Delete</p>
+<h4>Are you sure you want to delete <b> {{ column.name }} </b>?</h4>
+<p>Deleted data cannot be retrieved</p>
+<div>
+    <button type="button" mat-raised-button [disabled]="isLoading" (click)="deleteColumn()" >Yes</button>
+    <button type="button" mat-dialog-close [disabled]="isLoading">No</button>
+</div>

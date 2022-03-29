@@ -10,6 +10,7 @@ export interface Column {
   alignment: string;
   textWrap: boolean;
   dropdownValues?: Array<any>;
+  isPrimaryKey: boolean;
 }
 
 export interface Response {

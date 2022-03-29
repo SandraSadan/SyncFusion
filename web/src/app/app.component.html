@@ -1,22 +1,11 @@
-<ejs-treegrid
-  #treeGrid
-  [dataSource]='data'
-  [treeColumnIndex]='1'
-  [allowSorting]="true"
-  [allowMultiSorting]="true"
-  [sortSettings]="sortSettings"
-  [editSettings]='editSettings'
-  [selectionSettings]='selectionOptions'
-  [showColumnChooser]='true'
-  [contextMenuItems]='contextMenuItems'
-  (contextMenuOpen)="contextMenuOpen($event)"
-  (contextMenuClick)="contextMenuClick($event)"
-  [enableVirtualization]='true'
-  [height]='500'
-  childMapping='subtasks'>
-  <e-columns>
-    <ng-container *ngFor="let column of columnList">
-      <e-column [field]="column.fieldName" [headerText]="column.name" [textAlign]="column.alignment" [width]="column.minimumWidth"></e-column>
-    </ng-container>
-  </e-columns>
+<ejs-treegrid #treeGrid [dataSource]='data' [treeColumnIndex]='1' [showColumnChooser]='true'
+    (contextMenuOpen)="contextMenuOpen($event)" (contextMenuClick)="contextMenuClick($event)"
+    [enableVirtualization]='true' [height]='500' childMapping='subtasks'>
+    <e-columns>
+        <ng-container *ngFor="let column of columnList">
+            <e-column [field]="column.fieldName" [headerText]="column.name" [textAlign]="column.alignment"
+                [defaultValue]="column.defaultValue" [customAttributes]="column.customAttributes"
+                [allowEditing]="!column.isPrimaryKey"></e-column>
+        </ng-container>
+    </e-columns>
 </ejs-treegrid>
