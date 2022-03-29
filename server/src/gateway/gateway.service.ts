@@ -46,7 +46,7 @@ export class GatewayService
   }
 
   @SubscribeMessage('setting')
-  handleSetting(@MessageBody() data: FileData): FileData {
+  handleSetting(@MessageBody() data: object): object {
     this.server.emit('setting', data);
     return data;
   }

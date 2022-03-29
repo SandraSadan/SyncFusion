@@ -36,7 +36,7 @@ export class ColumnController {
   }
 
   @Put('/settings')
-  async updateSettings(@Body() bodyData: object): Promise<FileData> {
+  async updateSettings(@Body() bodyData: object): Promise<object> {
     return this.columnService.updateSettings(bodyData);
   }
 }

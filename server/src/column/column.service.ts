@@ -4,7 +4,8 @@ import { FileData } from 'src/data/interfaces';
 import { GatewayService } from 'src/gateway/gateway.service';
 import {
   readFileJson,
-  writeFileJson,
+  readSettings,
+  writeSettings,
 } from 'src/shared/services/file-read-write.service';
 import { File } from 'src/shared/utils/constants';
 import { Column } from './interfaces';
@@ -49,16 +50,16 @@ export class ColumnService {
   }
 
   async getSettings(): Promise<object> {
-    return { settings: readFileJson().settings };
+    return readSettings();
   }
 
-  async updateSettings(bodyData: object): Promise<FileData> {
-    const data: FileData = readFileJson();
+  async updateSettings(bodyData: object): Promise<object> {
+    const data: object = readSettings();
     Object.assign(data, {
       settings: bodyData,
     });
-    writeFileJson(data.data, data.columns, data.settings);
-    const result = readFileJson();
+    writeSettings(data);
+    const result = readSettings();
     this.gatewayService.handleSetting(result);
     return result;
   }
