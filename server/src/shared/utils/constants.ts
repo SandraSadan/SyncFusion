@@ -10,4 +10,5 @@ export enum File {
   GET_ROW = 'get_row',
   GET_COLUMN = 'get_column',
   REMOVE_PROPERTY = 'remove_property',
+  PASTE_NEXT = "paste_next"
 }
