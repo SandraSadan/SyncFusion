@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { isEmpty } from 'lodash';
+import { isEmpty, includes, forEach } from 'lodash';
 import { Column } from 'src/column/interfaces';
 import {
   readFileJson,
@@ -54,11 +54,10 @@ export class DataService {
     type: string,
     id?: number,
     bodyData?: any,
-    rowList?: any[],
     property?: { fieldName: string; defaultValue: any },
   ): Promise<any[]> {
     const rowFileData: Array<any> = [];
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       const importStream = readFileStream(),
         rowDataParser = JSONStream.parse('data.*');
       importStream.pipe(rowDataParser);
@@ -66,13 +65,44 @@ export class DataService {
       rowDataParser.on('error', (error) => {
         reject(error);
       });
-      let rowCount = 0;
+      let rowCount = 0,
+        rowIds = [],
+        bodyRowData = [],
+        isIdFound: boolean = false,
+        isRowAdded: boolean = false,
+        minusCount = 0,
+        plussCount = 0,
+        currentRowId;
+
+      let flatterArray = (data, result = []) => {
+        forEach(data, (prop) => {
+          rowIds.push(prop.id);
+          result.push({ ...prop });
+          flatterArray(prop.subtasks, result);
+        });
+        bodyRowData = result;
+        return result;
+      };
+      if (type === File.PASTE_NEXT || type === File.DELETE_ROW) {
+        await flatterArray(bodyData['rowData']);
+      }
 
       rowDataParser.on('data', (rowData: any) => {
-        rowCount++;
+        currentRowId = rowData.id;
+        rowCount = rowCount < rowData.uniqueId ? rowData.uniqueId : rowCount;
         switch (type) {
           case File.ADD_ROW:
-            rowFileData.push(rowData);
+            if (rowData.id + 1 === Number(bodyData.id)) {
+              isRowAdded = true;
+              rowFileData.push(rowData, bodyData);
+            }
+            if (!isIdFound && rowData.id === Number(bodyData.id))
+              isIdFound = true;
+            if (isIdFound) {
+              isRowAdded = false;
+              Object.assign(rowData, { id: rowData.id + 1 });
+            }
+            !isRowAdded && rowFileData.push(rowData);
             break;
           case File.UPDATE_ROW:
             if (rowData.id === Number(id)) {
@@ -81,8 +111,35 @@ export class DataService {
             rowFileData.push(rowData);
             break;
           case File.DELETE_ROW:
-            if (rowData.id !== Number(id)) {
-              rowFileData.push(rowData);
+            if (!includes(rowIds, rowData.id)) {
+              rowFileData.push(
+                Object.assign(rowData, {
+                  id: rowData.id - minusCount,
+                }),
+              );
+            } else {
+              minusCount++;
+            }
+            break;
+          case File.PASTE_NEXT:
+            if (!includes(rowIds, rowData.id)) {
+              rowFileData.push(
+                Object.assign(rowData, {
+                  id: rowData.id - minusCount + plussCount,
+                  parentId: rowData.parentId - minusCount,
+                }),
+              );
+            } else {
+              minusCount++;
+            }
+            if (currentRowId + 1 === Number(bodyData.id)) {
+              forEach(bodyRowData, (ele) => {
+                plussCount++;
+                Object.assign(ele, {
+                  id: rowFileData[rowFileData.length - 1].id + 1,
+                });
+                rowFileData.push(ele);
+              });
             }
             break;
           case File.DELETE_COLUMN:
@@ -107,12 +164,25 @@ export class DataService {
             File.GET_COLUMN,
           );
           if (type === File.ADD_ROW) {
-            Object.assign(bodyData, { id: rowCount });
-            rowFileData.push(bodyData);
+            let dataArray = [...rowFileData];
+            const selectedRowValue = rowFileData[bodyData.id - 1];
+            dataArray[selectedRowValue.id] = Object.assign(selectedRowValue, {
+              uniqueId: rowCount + 1,
+            });
+          }
+          if (type === File.PASTE_NEXT) {
+            let dataArray = [...rowFileData];
+            let count = 0;
+            forEach(bodyRowData, (ele) => {
+              count++;
+              const selectedRowValue = rowFileData[ele.id - 1];
+              dataArray[selectedRowValue.id] = Object.assign(selectedRowValue, {
+                uniqueId: rowCount + count,
+              });
+            });
           }
           await writeFileJson(rowFileData, columnFileData);
         }
-
         resolve(rowFileData);
       });
     });
@@ -147,6 +217,7 @@ export class DataService {
             if (columnData.fieldName === fieldName) {
               columnData = bodyData;
             }
+            break;
           default:
             columnFileData.push(columnData);
             break;
@@ -161,7 +232,6 @@ export class DataService {
           const rowFileData: any[] = await this.readFileStreamByRow(
             type,
             0,
-            null,
             null,
             {
               fieldName,
@@ -185,13 +255,13 @@ export class DataService {
     return readFileJson();
   }
 
-  async pasteRow(parentId: number, bodyData: any[]): Promise<FileData> {
-    await this.readFileStreamByRow(File.PASTE_ROW, parentId, null, bodyData);
+  async pasteRow(bodyData: any): Promise<FileData> {
+    await this.readFileStreamByRow(File.PASTE_NEXT, null, bodyData, null);
     return readFileJson();
   }
 
-  async deleteRow(id: number): Promise<FileData> {
-    await this.readFileStreamByRow(File.DELETE_ROW, id);
+  async deleteRow(bodyData: any): Promise<FileData> {
+    await this.readFileStreamByRow(File.DELETE_ROW, null, bodyData, null);
     return readFileJson();
   }
 }
