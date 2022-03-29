@@ -68,6 +68,7 @@ export class AppComponent {
     showDeleteConfirmDialog: true,
     mode: 'Dialog',
   };
+  actionType: string = '';
 
   @ViewChild('treeGrid')
   public treeGrid!: TreeGridComponent;
@@ -169,42 +170,20 @@ export class AppComponent {
 
   // TODO need to change the arg type "any" and integrate API functionality
   contextMenuClick(args: any): void {
-    const data: TableData = {
-      id: this.data.length + 1,
-      firstName: 'sandra',
-      lastName: 'sadan',
-      email: 'sandra@gmail.com',
-      gender: 'female',
-      ipAddress: '099090',
-      address: "Chennai",
-      region: "Asia",
-      parentId: 0,
-    };
-    
+    this.actionType = args.item.id;
+
     switch (args.item.id) {
       case 'add-row':
         this.treeGrid.editSettings.newRowPosition = 'Below';
-        this.treeGrid.addRecord(); // add record user can add row top or below using new row position
-        this.dataService.addRow(data).subscribe({
-          next: (res) => {
-            this.data = res.data;
-            this.notification.openSuccessSnackBar('Row added successfully');
-          }
-        });
+        this.selectedIndex = args.rowInfo.rowData.id;
+        this.treeGrid.addRecord();
         break;
       case 'add-child':
         this.treeGrid.editSettings.newRowPosition = 'Child';
-        this.treeGrid.addRecord(); // add child row
-        data.parentId = args.rowInfo.rowData.id;
-        this.dataService.addRow(data).subscribe({
-          next: (res) => {
-            this.data = res.data;
-            this.notification.openSuccessSnackBar('Child row added successfully');
-          }
-        });
+        this.treeGrid.addRecord();
         break;
       case 'delete-row':
-        this.dataService.deleteRow(args.rowInfo.rowData.id).subscribe({
+        this.dataService.deleteRow(args.rowInfo.rowData).subscribe({
           next: (res) => {
             this.data = res.data;
             this.notification.openSuccessSnackBar('Row deleted successfully');
@@ -283,12 +262,24 @@ export class AppComponent {
 
   actionComplete(args: TreeGridComponent["actionComplete"]): void {
     if (args.requestType === "save") {
-      this.dataService.editRow(args.data.id, args.data).subscribe({
-        next: (res) => {
-          this.data = res.data;
-          this.notification.openSuccessSnackBar('Row edited successfully');
-        }
-      });
+      if (args.action === "add") {
+        args.data.id = this.selectedIndex + 1;
+        args.data.parentId = this.actionType === 'add-row' ? 0: this.selectedIndex;
+        this.dataService.addRow(args.data).subscribe({
+          next: (res) => {
+            this.data = res.data;
+            this.notification.openSuccessSnackBar('Row added successfully');
+          }
+        });
+      }
+      if (args.action === "edit") {
+        this.dataService.editRow(args.data.id, args.data).subscribe({
+          next: (res) => {
+            this.data = res.data;
+            this.notification.openSuccessSnackBar('Row edited successfully');
+          }
+        });
+      }
     }
   }
 }

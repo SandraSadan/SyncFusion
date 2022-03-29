@@ -41,7 +41,7 @@ export class DataService extends Request {
     return this.httpPut(`data/${rowId}`, data)
   }
 
-  deleteRow(rowId: string): Observable<any> {
-    return this.httpDelete(`data/delete/row/${rowId}`);
+  deleteRow(data: TableData): Observable<any> {
+    return this.httpPut(`data/delete/row`, data);
   }
 }
