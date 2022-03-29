@@ -39,6 +39,12 @@ export class GatewayService
     return data;
   }
 
+  @SubscribeMessage('row')
+  handleRow(@MessageBody() data: FileData): FileData {
+    this.server.emit('row', data);
+    return data;
+  }
+
   afterInit(server: Server) {
     console.log('Init');
   }

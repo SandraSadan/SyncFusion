@@ -35,7 +35,7 @@ export class ColumnService {
   }
 
   async updateColumn(columnData: Column): Promise<FileData> {
-    await this.dataService.readFileStreamByColumn(
+    await this.dataService.columUpdateStream(
       File.UPDATE_COLUMN,
       columnData.fieldName,
       columnData,
