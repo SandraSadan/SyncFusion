@@ -45,6 +45,12 @@ export class GatewayService
     return data;
   }
 
+  @SubscribeMessage('setting')
+  handleSetting(@MessageBody() data: FileData): FileData {
+    this.server.emit('setting', data);
+    return data;
+  }
+
   afterInit(server: Server) {
     console.log('Init');
   }
