@@ -14,7 +14,7 @@ import {
   SelectionSettingsModel,
   TreeGridComponent
 } from '@syncfusion/ej2-angular-treegrid';
-import { get, find, map } from 'lodash';
+import { get, find, map, isEmpty } from 'lodash';
 import { ColumnSettingsDialogComponent } from 'src/modules/dialogs/column-settings-dialog/column-settings-dialog.component';
 import { DeleteDialogComponent } from 'src/modules/dialogs/delete-dialog/delete-dialog.component';
 import { NotificationService } from 'src/modules/services/notification.service';
@@ -47,9 +47,9 @@ export class AppComponent {
     { text: "Delete Row", target: ".e-content", id: "delete-row" },
     { text: "Multi Select", target: ".e-content", id: "multi-select", iconCss: 'c-custom' },
     { text: "Copy Rows", target: ".e-content", id: "copy-row" },
-    { text: "Cut Rows", target: ".e-content", id: "cut-rows" },
-    { text: "Paste Next", target: ".e-content", id: "paste-next" },
-    { text: "Paste Child", target: ".e-content", id: "paste-child" },
+    { text: "Cut Rows", target: ".e-content", id: "cut-rows", iconCss: 'd-none' },
+    { text: "Paste Next", target: ".e-content", id: "paste-next", iconCss: 'd-none' },
+    { text: "Paste Child", target: ".e-content", id: "paste-child", iconCss: 'd-none' },
     { text: 'New Column', target: '.e-headercontent', id: 'new-col' },
     { text: 'Edit Column', target: '.e-headercontent', id: 'edit-col' },
     { text: 'Delete Column', target: '.e-headercontent', id: 'del-col' },
@@ -176,6 +176,13 @@ export class AppComponent {
         spanEle.setAttribute('class', 'e-checkboxspan');
         ele.appendChild(spanEle);
       });
+    }
+
+    if (isEmpty(this.selectedRecord)) {
+      const hiddenElements = document.querySelectorAll<HTMLElement>('.d-none');
+      hiddenElements.forEach((element: HTMLElement) => {
+        (element.parentElement as HTMLElement).style.pointerEvents = 'none';
+      })
     }
   }
 
