@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { isEmpty, includes, forEach } from 'lodash';
+import { isEmpty, includes, forEach, isDate, isArray, isNaN } from 'lodash';
 import { Column } from 'src/column/interfaces';
 import {
   readFileJson,
@@ -42,7 +42,7 @@ export class DataService {
       );
       dataset.forEach((aData) => {
         if (aData.parentId > 0)
-          hashTable[aData.parentId].subtasks.push(hashTable[aData.id]);
+          hashTable[aData.parentId]?.subtasks.push(hashTable[aData.id]);
         else dataTree.push(hashTable[aData.id]);
       });
       return dataTree;
@@ -253,23 +253,111 @@ export class DataService {
     });
   }
 
+  async columUpdateStream(type: string, fieldName?: string, bodyData?: Column) {
+    const columnFileData: Array<Column> = [];
+    let isDataTypeChanged: boolean = false;
+    await new Promise((resolve, reject) => {
+      const importStream = readFileStream(),
+        columnDataParser = JSONStream.parse('columns.*');
+      importStream.pipe(columnDataParser);
+      columnDataParser.on('error', (error) => {
+        reject(error);
+      });
+      columnDataParser.on('data', (columnData: Column) => {
+        if (type === File.UPDATE_COLUMN) {
+          isDataTypeChanged =
+            columnData.fieldName === fieldName &&
+            columnData.dataType !== bodyData.dataType;
+          if (columnData.fieldName === fieldName) {
+            Object.assign(columnData, bodyData);
+          }
+          columnFileData.push(columnData);
+        }
+      });
+      columnDataParser.on('end', async () => {
+        if (!isDataTypeChanged) {
+          const rowFileData: any[] = await this.readFileStreamByRow(
+            type,
+            0,
+            null,
+            {
+              fieldName,
+              defaultValue: isEmpty(bodyData) ? null : bodyData.defaultValue,
+            },
+          );
+          await writeFileJson(rowFileData, columnFileData);
+        }
+        resolve(columnFileData);
+      });
+    });
+
+    const rowFileData: Array<any> = [];
+    isDataTypeChanged &&
+      (await new Promise((resolve, reject) => {
+        const importStream = readFileStream(),
+          rowDataParser = JSONStream.parse('data.*');
+        importStream.pipe(rowDataParser);
+
+        rowDataParser.on('error', (error) => {
+          reject(error);
+        });
+        let rowCount = 0;
+
+        rowDataParser.on('data', (rowData: any) => {
+          rowCount++;
+          switch (true) {
+            case bodyData.dataType === 'number' &&
+              !isNaN(Number(rowData[bodyData.fieldName])):
+              rowData[bodyData.fieldName] = Number(rowData[bodyData.fieldName]);
+              break;
+            case bodyData.dataType === 'string':
+              rowData[bodyData.fieldName] = String(rowData[bodyData.fieldName]);
+              break;
+            case bodyData.dataType === 'boolean' &&
+              !isArray(rowData[bodyData.fieldName]) &&
+              !isDate(rowData[bodyData.fieldName]):
+              rowData[bodyData.fieldName] =
+                rowData[bodyData.fieldName] === 'true' ||
+                Number(rowData[bodyData.fieldName]) > 0;
+              break;
+            default:
+              rowData[bodyData.fieldName] = bodyData.defaultValue;
+              break;
+          }
+          rowFileData.push(rowData);
+        });
+
+        rowDataParser.on('end', async () => {
+          writeFileJson(rowFileData, columnFileData);
+          resolve(rowFileData);
+        });
+      }));
+  }
+
   async addRow(bodyData: any): Promise<FileData> {
     await this.readFileStreamByRow(File.ADD_ROW, 0, bodyData);
-    return readFileJson();
+    const result = readFileJson();
+    this.gatewayService.handleRow(result);
+    return result;
   }
 
   async updateRow(id: number, bodyData: any): Promise<FileData> {
     await this.readFileStreamByRow(File.UPDATE_ROW, id, bodyData);
-    return readFileJson();
+    const result = readFileJson();
+    this.gatewayService.handleRow(result);
+    return result;
   }
-
   async pasteRow(bodyData: any): Promise<FileData> {
     await this.readFileStreamByRow(File.PASTE_ROW, null, bodyData, null);
-    return readFileJson();
+    const result = readFileJson();
+    this.gatewayService.handleRow(result);
+    return result;
   }
 
   async deleteRow(bodyData: any): Promise<FileData> {
     await this.readFileStreamByRow(File.DELETE_ROW, null, bodyData, null);
-    return readFileJson();
+    const result = readFileJson();
+    this.gatewayService.handleRow(result);
+    return result;
   }
 }

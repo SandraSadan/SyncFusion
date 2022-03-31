@@ -29,4 +29,14 @@ export class ColumnController {
   async updateColum(@Body() column: Column): Promise<FileData> {
     return this.columnService.updateColumn(column);
   }
+
+  @Get('/settings')
+  async getSettings(): Promise<object> {
+    return this.columnService.getSettings();
+  }
+
+  @Put('/settings')
+  async updateSettings(@Body() bodyData: object): Promise<object> {
+    return this.columnService.updateSettings(bodyData);
+  }
 }

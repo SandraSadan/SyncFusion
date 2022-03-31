@@ -6,6 +6,9 @@ export interface TableData {
   gender: string;
   ipAddress: string;
   subtasks?: TableData[];
+  parentId: number;
+  address: string;
+  region: string;
 }
 
 export interface ColumnData {
@@ -20,5 +23,7 @@ export interface ColumnData {
   alignment: string;
   textWrap: boolean;
   dropdownValues?: Array<any>;
+  isPrimaryKey: boolean;
+  customAttributes?: object;
 }
 

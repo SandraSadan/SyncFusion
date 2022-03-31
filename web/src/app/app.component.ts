@@ -14,10 +14,10 @@ import {
   SelectionSettingsModel,
   TreeGridComponent
 } from '@syncfusion/ej2-angular-treegrid';
-import { get, find } from 'lodash';
+import { get, find, map } from 'lodash';
 import { ColumnSettingsDialogComponent } from 'src/modules/dialogs/column-settings-dialog/column-settings-dialog.component';
 import { DeleteDialogComponent } from 'src/modules/dialogs/delete-dialog/delete-dialog.component';
-
+import { NotificationService } from 'src/modules/services/notification.service';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -26,6 +26,7 @@ import { DeleteDialogComponent } from 'src/modules/dialogs/delete-dialog/delete-
 export class AppComponent {
 
   constructor(
+    private notification: NotificationService,
     private socketService: SocketService,
     private dataService: DataService,
     private matDialog: MatDialog
@@ -64,8 +65,10 @@ export class AppComponent {
     allowEditOnDblClick: true,
     newRowPosition: 'Top',
     showConfirmDialog: false,
+    showDeleteConfirmDialog: true,
     mode: 'Dialog',
   };
+  actionType: string = '';
 
   @ViewChild('treeGrid')
   public treeGrid!: TreeGridComponent;
@@ -86,13 +89,18 @@ export class AppComponent {
     this.treeGrid.editSettings = this.editSettings;
     this.treeGrid.selectionSettings = this.selectionOptions;
     this.treeGrid.allowMultiSorting = false;
+    this.treeGrid.allowSorting = false;
+    this.treeGrid.allowSelection = false;
     this.treeGrid.allowFiltering = false;
   }
 
   initiateSockets(): void {
     this.socketService.columnChanges().subscribe((res: any) => {
       this.data = get(res, 'data', []);
-      this.columnList = get(res, 'columns', []);
+      this.assignColumnData(get(res, 'columns', []));
+    });
+    this.socketService.rowChanges().subscribe((res: any) => {
+      this.data = get(res, 'data', []);
     });
   }
 
@@ -107,63 +115,105 @@ export class AppComponent {
   getColumn(): void {
     this.dataService.getColumn().subscribe({
       next: (res) => {
-        this.columnList = get(res, 'column', []);
+        this.assignColumnData(get(res, 'column', []));
       }
     })
   }
 
+  assignColumnData(columns: ColumnData[]): void {
+    this.columnList = map(columns, column => {
+      column['customAttributes'] = {
+        'style': {
+          'background-color': column.backgroundColor,
+          'font-size': column.fontSize + 'px',
+          'color': column.fontColor,
+          'min-width': '150px',
+          'width': column.minimumWidth
+        },
+        'class': column.textWrap ? 'text-wrap' : 'text-truncate'
+      };
+      return column;
+    })
+  }
+
   contextMenuOpen(args: any): void {
-    if (this.isInitialLoad) {
-      this.isInitialLoad = false;
-      const parentNode: any[] = [],
-        customElement = (args as BeforeOpenCloseEventArgs).element.querySelectorAll('.c-custom');
+    const parentNode: any[] = [],
+      customElement = (args as BeforeOpenCloseEventArgs).element.querySelectorAll(this.isInitialLoad ? '.c-custom' : '.e-checkbox');
+    this.isInitialLoad = false;
 
-      // To append checkbox for elements
-      if (customElement.length) {
-        customElement.forEach((innerEle: Element) => {
-          parentNode.push(innerEle.parentElement);
-        });
-        parentNode.forEach((ele) => {
-          const text = ele.textContent;
-          ele.innerText = '';
-          let inputEle: any = createElement('input');
-          inputEle.type = 'checkbox';
+    // To append checkbox for elements
+    if (customElement.length) {
+      customElement.forEach((innerEle: Element) => {
+        parentNode.push(innerEle.parentElement);
+      });
+      parentNode.forEach((ele) => {
+        let value = false;
+        switch (ele.outerText) {
+          case 'Multi Select':
+            value = this.treeGrid.allowSelection;
+            break;
+          case 'Filter Column':
+            value = this.treeGrid.allowFiltering;
+            break;
+          case 'Freeze Column':
+            value = this.treeGrid.frozenColumns >= (args.column.index + 1) && this.treeGrid.frozenColumns > 0;
+            break;
+          case 'Multi Sort':
+            value = this.treeGrid.allowMultiSorting;
+            break;
+        }
+        const text = ele.textContent;
+        ele.innerText = '';
+        let inputEle: any = createElement('input');
+        inputEle.type = 'checkbox';
 
-          inputEle.setAttribute('class', 'e-checkbox');
-          ele.prepend(inputEle);
-          let spanEle = createElement('span');
-          spanEle.textContent = text;
-          spanEle.setAttribute('class', 'e-checkboxspan');
-          ele.appendChild(spanEle);
-        });
-      }
+        inputEle.setAttribute('class', 'e-checkbox');
+        value ? inputEle.setAttribute('checked', value)
+          : inputEle.removeAttribute('checked');
+        ele.prepend(inputEle);
+        let spanEle = createElement('span');
+        spanEle.textContent = text;
+        spanEle.setAttribute('class', 'e-checkboxspan');
+        ele.appendChild(spanEle);
+      });
+    }
+  }
+
+  changeCheckboxValue(args: any, value: boolean): void {
+    if (args.event.target.classList.contains('e-checkboxspan')) {
+      const checkbox = args.element.querySelector('.e-checkbox');
+      checkbox.checked = value;
     }
   }
 
   // TODO need to change the arg type "any" and integrate API functionality
   contextMenuClick(args: any): void {
-    const data = {
-      id: this.data.length + 1,
-    };
-    if (args.event.target.classList.contains('e-checkboxspan')) {
-      const checkbox = args.element.querySelector('.e-checkbox');
-      checkbox.checked = !checkbox.checked;
-    }
+    this.actionType = args.item.id;
+
     switch (args.item.id) {
       case 'add-row':
-        this.treeGrid.addRecord(data, args.rowInfo.rowIndex, 'Below'); // add record user can add row top or below using new row position
+        this.treeGrid.editSettings.newRowPosition = 'Below';
+        this.selectedIndex = args.rowInfo.rowData.id;
+        this.treeGrid.addRecord();
         break;
       case 'add-child':
-        this.treeGrid.addRecord(data, args.rowInfo.rowIndex, 'Child'); // add child row
+        this.treeGrid.editSettings.newRowPosition = 'Child';
+        this.selectedIndex = args.rowInfo.rowData.id;
+        this.treeGrid.addRecord();
         break;
       case 'delete-row':
-        this.treeGrid.deleteRecord(); // delete the selected row
+        this.dataService.deleteRow(args.rowInfo.rowData).subscribe({
+          next: (res) => {
+            this.notification.openSuccessSnackBar('Row deleted successfully');
+          }
+        });
         break;
       case 'edit-row':
         this.treeGrid.startEdit(); // edit the selected row
         break;
       case 'multi-select':
-        this.treeGrid.selectionSettings.type = 'Multiple'; // enable multi selection
+        this.treeGrid.allowSelection = !this.treeGrid.allowSelection;
+        this.changeCheckboxValue(args, this.treeGrid.allowSelection)
         break;
       case 'copy-row':
         this.selectedIndex = this.treeGrid['getSelectedRowIndexes']()[0]; // select the records on perform Copy action
@@ -210,14 +260,49 @@ export class AppComponent {
         break;
       case 'filter-col':
         this.treeGrid.allowFiltering = !this.treeGrid.allowFiltering;
+        // this.treeGrid.filterSettings.type = 'Menu';
+        this.changeCheckboxValue(args, this.treeGrid.allowFiltering)
         break;
       case 'freeze-col':
-        // Need to modify
-        this.treeGrid.frozenColumns = args.column.dirIndex;
+        this.isInitialLoad = true;
+        if (this.treeGrid.frozenColumns == 0 || (args.column.dirIndex == 0 && this.treeGrid.frozenColumns == 1)) {
+          this.treeGrid.enableVirtualization = !this.treeGrid.enableVirtualization;
+          this.treeGrid.enableInfiniteScrolling = !this.treeGrid.enableInfiniteScrolling;
+          this.treeGrid.frozenColumns = this.treeGrid.enableInfiniteScrolling ? args.column.dirIndex + 1 : 0;
+        } else if (this.treeGrid.frozenColumns == args.column.dirIndex + 1) {
+          this.treeGrid.frozenColumns = this.treeGrid.frozenColumns - 1;
+        } else if (this.treeGrid.frozenColumns < args.column.dirIndex + 1) {
+          this.treeGrid.frozenColumns = args.column.dirIndex + 1;
+        } else {
+          this.notification.openWarningSnackBar("Action is not allowed");
+        }
         break;
       case 'multi-sort':
+        this.treeGrid.allowSorting = !this.treeGrid.allowSorting;
         this.treeGrid.allowMultiSorting = !this.treeGrid.allowMultiSorting;
+        this.changeCheckboxValue(args, this.treeGrid.allowMultiSorting)
         break;
+    }
+  }
+
+  actionComplete(args: TreeGridComponent["actionComplete"]): void {
+    if (args.requestType === "save") {
+      if (args.action === "add") {
+        args.data.id = this.selectedIndex + 1;
+        args.data.parentId = this.actionType === 'add-row' ? 0: this.selectedIndex;
+        this.dataService.addRow(args.data).subscribe({
+          next: (res) => {
+            this.notification.openSuccessSnackBar('Row added successfully');
+          }
+        });
+      }
+      if (args.action === "edit") {
+        this.dataService.editRow(args.data.id, args.data).subscribe({
+          next: (res) => {
+            this.notification.openSuccessSnackBar('Row edited successfully');
+          }
+        });
+      }
     }
   }
 }

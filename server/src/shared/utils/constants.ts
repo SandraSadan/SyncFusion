@@ -1,6 +1,7 @@
 export enum File {
   ADD_ROW = 'add_row',
   UPDATE_ROW = 'update_row',
+  UPDATE_DATA_TYPE = 'update_data_type',
   DELETE_ROW = 'delete_row',
   PASTE_CHILD = 'paste_child',
   PASTE_ROW = 'paste_row',

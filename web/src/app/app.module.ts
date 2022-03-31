@@ -2,12 +2,12 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialogModule } from '@angular/material/dialog';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-
-import { MatDialogModule } from '@angular/material/dialog';
-
 import {
   TreeGridModule, SortService,
   ResizeService,
@@ -17,25 +17,32 @@ import {
   ColumnChooserService,
   ToolbarService,
   FilterService,
+  FreezeService,
+  InfiniteScrollService,
+  PageService
 } from '@syncfusion/ej2-angular-treegrid';
+
 import { ColumnSettingsDialogModule } from 'src/modules/dialogs/column-settings-dialog/column-settings-dialog.module';
 import { NotificationService } from 'src/modules/services/notification.service';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { DeleteDialogModule } from 'src/modules/dialogs/delete-dialog/delete-dialog.module';
 
 
 @NgModule({
   declarations: [
-    AppComponent,
+    AppComponent
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
     BrowserAnimationsModule,
+    FormsModule,
+    ReactiveFormsModule,
     AppRoutingModule,
     TreeGridModule,
     MatDialogModule,
     MatSnackBarModule,
-    ColumnSettingsDialogModule
+    ColumnSettingsDialogModule,
+    DeleteDialogModule
   ],
   bootstrap: [AppComponent],
   providers: [
@@ -48,6 +55,9 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
     ColumnChooserService,
     ToolbarService,
     FilterService,
+    FreezeService,
+    InfiniteScrollService,
+    PageService
   ]
 })
 export class AppModule { }

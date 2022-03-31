@@ -2,7 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { DataService } from 'src/data/data.service';
 import { FileData } from 'src/data/interfaces';
 import { GatewayService } from 'src/gateway/gateway.service';
-import { readFileJson } from 'src/shared/services/file-read-write.service';
+import {
+  readFileJson,
+  readSettings,
+  writeSettings,
+} from 'src/shared/services/file-read-write.service';
 import { File } from 'src/shared/utils/constants';
 import { Column } from './interfaces';
 
@@ -35,13 +39,28 @@ export class ColumnService {
   }
 
   async updateColumn(columnData: Column): Promise<FileData> {
-    await this.dataService.readFileStreamByColumn(
+    await this.dataService.columUpdateStream(
       File.UPDATE_COLUMN,
       columnData.fieldName,
       columnData,
     );
     const result: FileData = readFileJson();
     this.gatewayService.handleColumn(result);
+    return result;
+  }
+
+  async getSettings(): Promise<object> {
+    return readSettings();
+  }
+
+  async updateSettings(bodyData: object): Promise<object> {
+    const data: object = readSettings();
+    Object.assign(data, {
+      settings: bodyData,
+    });
+    writeSettings(data);
+    const result = readSettings();
+    this.gatewayService.handleSetting(result);
     return result;
   }
 }
