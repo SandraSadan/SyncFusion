@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { isEmpty, includes, forEach, isDate, isArray, isNaN } from 'lodash';
+import { isEmpty, includes, forEach, isDate, isArray, isNaN, compact } from 'lodash';
 import { Column } from 'src/column/interfaces';
 import {
   readFileJson,
@@ -38,12 +38,12 @@ export class DataService {
       const hashTable = Object.create(null),
         dataTree = [];
       dataset.forEach(
-        (aData) => (hashTable[aData.id] = { ...aData, subtasks: [] }),
+        (aData) => (hashTable[aData.parentUniqueId] = { ...aData, subtasks: [] }),
       );
       dataset.forEach((aData) => {
         if (aData.parentId > 0)
-          hashTable[aData.parentId]?.subtasks.push(hashTable[aData.id]);
-        else dataTree.push(hashTable[aData.id]);
+          hashTable[aData.parentId]?.subtasks.push(hashTable[aData.parentUniqueId]);
+        else dataTree.push(hashTable[aData.parentUniqueId]);
       });
       return dataTree;
     };
@@ -120,7 +120,7 @@ export class DataService {
             rowFileData.push(rowData);
             break;
           case File.DELETE_ROW:
-            if (!includes(rowIds, rowData.id)) {
+            if (!includes(compact(rowIds), rowData.id)) {
               rowFileData.push(
                 Object.assign(rowData, {
                   id: rowData.id - minusCount,
