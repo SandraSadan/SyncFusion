@@ -74,17 +74,21 @@ export class DataService {
         plussCount = 0,
         currentRowId;
 
-      let flatterArray = (data, result = []) => {
+      let flatterArray = (data, result = [], level = 0) => {
         forEach(data, (prop) => {
           rowIds.push(prop.id);
+          Object.assign(prop, { level });
+          if (level === 0 && bodyData.parentId !== 0)
+            Object.assign(prop, { parentId: bodyData.parentId });
           result.push({ ...prop });
-          flatterArray(prop.subtasks, result);
+          flatterArray(prop.subtasks, result, level + 1);
         });
         bodyRowData = result;
         return result;
       };
-      if (type === File.PASTE_NEXT || type === File.DELETE_ROW) {
-        await flatterArray(bodyData['rowData']);
+
+      if (type === File.PASTE_ROW || type === File.DELETE_ROW) {
+        await flatterArray(bodyData.rowData);
       }
 
       rowDataParser.on('data', (rowData: any) => {
@@ -94,7 +98,12 @@ export class DataService {
           case File.ADD_ROW:
             if (rowData.id + 1 === Number(bodyData.id)) {
               isRowAdded = true;
-              rowFileData.push(rowData, bodyData);
+              rowFileData.push(
+                rowData,
+                Object.assign(bodyData, {
+                  parentUniqueId: Math.floor(Math.random() * 999999),
+                }),
+              );
             }
             if (!isIdFound && rowData.id === Number(bodyData.id))
               isIdFound = true;
@@ -121,12 +130,11 @@ export class DataService {
               minusCount++;
             }
             break;
-          case File.PASTE_NEXT:
+          case File.PASTE_ROW:
             if (!includes(rowIds, rowData.id)) {
               rowFileData.push(
                 Object.assign(rowData, {
                   id: rowData.id - minusCount + plussCount,
-                  parentId: rowData.parentId - minusCount,
                 }),
               );
             } else {
@@ -170,7 +178,7 @@ export class DataService {
               uniqueId: rowCount + 1,
             });
           }
-          if (type === File.PASTE_NEXT) {
+          if (type === File.PASTE_ROW) {
             let dataArray = [...rowFileData];
             let count = 0;
             forEach(bodyRowData, (ele) => {
@@ -340,7 +348,7 @@ export class DataService {
     return result;
   }
   async pasteRow(bodyData: any): Promise<FileData> {
-    await this.readFileStreamByRow(File.PASTE_NEXT, null, bodyData, null);
+    await this.readFileStreamByRow(File.PASTE_ROW, null, bodyData, null);
     const result = readFileJson();
     this.gatewayService.handleRow(result);
     return result;
