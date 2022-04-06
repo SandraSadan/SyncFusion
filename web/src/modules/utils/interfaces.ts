@@ -11,6 +11,11 @@ export interface TableData {
   region: string;
 }
 
+export interface RowData {
+  id: number;
+  parentId: number;
+  rowData: TableData[];
+}
 export interface ColumnData {
   name: string;
   fieldName: string;
@@ -26,4 +31,3 @@ export interface ColumnData {
   isPrimaryKey: boolean;
   customAttributes?: object;
 }
-

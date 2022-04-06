@@ -1,13 +1,12 @@
-import { Injectable } from "@angular/core";
-import { Request } from "../http/request";
-import { HttpClient } from "@angular/common/http";
-import { Observable } from "rxjs";
-import { ColumnData, TableData } from "../utils/interfaces";
+import { Injectable } from '@angular/core';
+import { Request } from '../http/request';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { ColumnData, RowData, TableData } from '../utils/interfaces';
 
 @Injectable({
-  providedIn: "root",
+  providedIn: 'root',
 })
-
 export class DataService extends Request {
   constructor(private httpClient: HttpClient) {
     super(httpClient);
@@ -22,15 +21,15 @@ export class DataService extends Request {
   }
 
   addColumn(data: ColumnData): Observable<any> {
-    return this.httpPost('column', data)
+    return this.httpPost('column', data);
   }
 
   editColumn(data: ColumnData): Observable<any> {
-    return this.httpPut('column', data)
+    return this.httpPut('column', data);
   }
 
   deleteColumn(data: ColumnData): Observable<any> {
-    return this.httpPut('column/delete', { columnName: data.fieldName })
+    return this.httpPut('column/delete', { columnName: data.fieldName });
   }
 
   addRow(data: TableData): Observable<any> {
@@ -38,10 +37,14 @@ export class DataService extends Request {
   }
 
   editRow(rowId: string, data: TableData): Observable<any> {
-    return this.httpPut(`data/${rowId}`, data)
+    return this.httpPut(`data/${rowId}`, data);
   }
 
   deleteRow(data: TableData): Observable<any> {
     return this.httpPut(`data/delete/row`, data);
+  }
+
+  pasteRow(data: RowData): Observable<any> {
+    return this.httpPut(`data/paste/row`, data);
   }
 }
