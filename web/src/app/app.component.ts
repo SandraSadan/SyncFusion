@@ -228,14 +228,17 @@ export class AppComponent {
       case 'add-child':
         this.treeGrid.editSettings.newRowPosition = 'Child';
         this.selectedIndex = args.rowInfo.rowData.id;
+        this.selectedRowParentId = args.rowInfo.rowData.parentUniqueId;
         this.treeGrid.addRecord();
         break;
       case 'delete-row':
-        this.dataService.deleteRow(args.rowInfo.rowData).subscribe({
-          next: (res) => {
-            this.notification.openSuccessSnackBar('Row deleted successfully');
-          },
-        });
+        this.dataService
+          .deleteRow({ rowData: args.rowInfo.rowData })
+          .subscribe({
+            next: (res) => {
+              this.notification.openSuccessSnackBar('Row deleted successfully');
+            },
+          });
         break;
       case 'edit-row':
         this.treeGrid.startEdit(); // edit the selected row

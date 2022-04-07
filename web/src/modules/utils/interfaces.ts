@@ -12,8 +12,8 @@ export interface TableData {
 }
 
 export interface RowData {
-  id: number;
-  parentId: number;
+  id?: number;
+  parentId?: number;
   rowData: TableData[];
 }
 export interface ColumnData {
